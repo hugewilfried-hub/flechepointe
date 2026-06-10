@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3 uid="uid://b35va7qr0a6n"]
+
+[ext_resource type="Script" uid="uid://bq5xt5l0si8le" path="res://components/ScorePanel.gd" id="1_7g5jr"]
+
+[node name="ScorePanel" type="ScrollContainer"]
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 2
+script = ExtResource("1_7g5jr")

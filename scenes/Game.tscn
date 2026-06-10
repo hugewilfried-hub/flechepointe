@@ -1,0 +1,63 @@
+[gd_scene load_steps=4 format=3 uid="uid://xxxocdb1a1ol"]
+
+[ext_resource type="Script" uid="uid://r3eo1upb8eqb" path="res://scenes/Game.gd" id="1_cpr0p"]
+[ext_resource type="PackedScene" uid="uid://b35va7qr0a6n" path="res://components/ScorePanel.tscn" id="2_78awf"]
+[ext_resource type="PackedScene" uid="uid://djuivygn6ct5g" path="res://components/DartboardInput.tscn" id="3_s0nni"]
+
+[node name="Game" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_cpr0p")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="top_bar" type="HFlowContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="lbl_round" type="Label" parent="VBoxContainer/top_bar"]
+layout_mode = 2
+
+[node name="lbl_current_player" type="Label" parent="VBoxContainer/top_bar"]
+layout_mode = 2
+
+[node name="btn_menu" type="Button" parent="VBoxContainer/top_bar"]
+layout_mode = 2
+text = "☰"
+
+[node name="score_panel" parent="VBoxContainer" instance=ExtResource("2_78awf")]
+
+[node name="dartboard" parent="VBoxContainer" instance=ExtResource("3_s0nni")]
+
+[node name="throw_panel" type="VBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="dart_row" type="HFlowContainer" parent="VBoxContainer/throw_panel"]
+layout_mode = 2
+
+[node name="dart1" type="Label" parent="VBoxContainer/throw_panel/dart_row"]
+layout_mode = 2
+
+[node name="dart2" type="Label" parent="VBoxContainer/throw_panel/dart_row"]
+layout_mode = 2
+
+[node name="dart3" type="Label" parent="VBoxContainer/throw_panel/dart_row"]
+layout_mode = 2
+
+[node name="lbl_bust" type="Label" parent="VBoxContainer/throw_panel"]
+visible = false
+layout_mode = 2
+text = "💥 BUST !"
+
+[node name="HFlowContainer" type="HFlowContainer" parent="VBoxContainer/throw_panel"]
+layout_mode = 2
+
+[node name="btn_undo" type="Button" parent="VBoxContainer/throw_panel/HFlowContainer"]
+layout_mode = 2
+text = "↩ Annuler"
+
+[node name="btn_next" type="Button" parent="VBoxContainer/throw_panel/HFlowContainer"]
+layout_mode = 2
+text = "Tour suivant →"
