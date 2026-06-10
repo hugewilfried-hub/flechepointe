@@ -6,7 +6,7 @@ extends HBoxContainer
 #  Appelé depuis Game.gd via refresh(...)
 # ─────────────────────────────────────────────
 
-const MARK_ICONS := ["", "/", "✕", "●"]  # 0, 1, 2, 3 marques
+#const MARK_ICONS := ["", "/", "✕", "●"]  # 0, 1, 2, 3 marques
 
 # ─────────────────────────────────────────────
 #  Point d'entrée public

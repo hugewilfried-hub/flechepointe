@@ -7,3 +7,5 @@
 [node name="HBoxContainer" type="HBoxContainer" parent="."]
 layout_mode = 2
 script = ExtResource("1_7g5jr")
+
+[node name="Node2D" type="Node2D" parent="."]
