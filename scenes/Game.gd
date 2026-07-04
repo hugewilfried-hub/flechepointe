@@ -18,12 +18,14 @@ const MENU_SCENE := "res://scenes/MainMenu.tscn"
 @onready var lbl_bust:    Label         = $VBoxContainer/throw_panel/lbl_bust
 @onready var btn_undo:    Button        = $VBoxContainer/throw_panel/HFlowContainer/btn_undo
 @onready var btn_next:    Button        = $VBoxContainer/throw_panel/HFlowContainer/btn_next
-@onready var btn_end_free: Button       = $VBox/ThrowPanel/BtnRow/btn_End_Free
+#@onready var btn_end_free: Button       = $VBox/ThrowPanel/BtnRow/btn_End_Free
+var btn_end_free: Button = null
 
 var _darts: Array[Dictionary] = []
 var _bust: bool = false
 
 func _ready() -> void:
+	btn_end_free = get_node_or_null("VBoxContainer/throw_panel/HFlowContainer/btn_end_free")
 	if not dartboard.dart_thrown.is_connected(_on_dart_thrown):
 		dartboard.dart_thrown.connect(_on_dart_thrown)
 	

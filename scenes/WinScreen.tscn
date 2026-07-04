@@ -1,34 +1,37 @@
-[gd_scene load_steps=2 format=3 uid="uid://ddnm1p8pyccvr"]
+[gd_scene format=3 uid="uid://ddnm1p8pyccvr"]
 
 [ext_resource type="Script" uid="uid://e7060scc0b0i" path="res://scenes/WinScreen.gd" id="1_ulig0"]
 
-[node name="WinScreen" type="Control"]
+[node name="WinScreen" type="Control" unique_id=1646087787]
 layout_mode = 3
 anchors_preset = 0
 script = ExtResource("1_ulig0")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 40.0
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=2138841653]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 
-[node name="Label" type="Label" parent="VBoxContainer"]
+[node name="Label" type="Label" parent="VBoxContainer" unique_id=1368289506]
 layout_mode = 2
 text = "🏆 Victoire ! 🏆"
 
-[node name="lbl_winner" type="Label" parent="VBoxContainer"]
+[node name="lbl_winner" type="Label" parent="VBoxContainer" unique_id=1284643367]
 layout_mode = 2
 
-[node name="scores_container" type="VBoxContainer" parent="VBoxContainer"]
+[node name="scores_container" type="VBoxContainer" parent="VBoxContainer" unique_id=2137219664]
 layout_mode = 2
 
-[node name="HFlowContainer" type="HFlowContainer" parent="VBoxContainer"]
+[node name="HFlowContainer" type="HFlowContainer" parent="VBoxContainer" unique_id=1173082696]
 layout_mode = 2
 
-[node name="btn_menu" type="Button" parent="VBoxContainer/HFlowContainer"]
+[node name="btn_menu" type="Button" parent="VBoxContainer/HFlowContainer" unique_id=1233617752]
 layout_mode = 2
 text = "Nouvelle partie "
 
-[node name="btn_replay" type="Button" parent="VBoxContainer/HFlowContainer"]
+[node name="btn_replay" type="Button" parent="VBoxContainer/HFlowContainer" unique_id=1564289602]
 layout_mode = 2
 text = "Rejouer (même joueurs) "

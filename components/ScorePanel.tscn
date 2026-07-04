@@ -1,11 +1,11 @@
-[gd_scene load_steps=2 format=3 uid="uid://b35va7qr0a6n"]
+[gd_scene format=3 uid="uid://b35va7qr0a6n"]
 
 [ext_resource type="Script" uid="uid://bq5xt5l0si8le" path="res://components/ScorePanel.gd" id="1_7g5jr"]
 
-[node name="ScorePanel" type="ScrollContainer"]
+[node name="ScorePanel" type="ScrollContainer" unique_id=436887270]
 
-[node name="HBoxContainer" type="HBoxContainer" parent="."]
+[node name="HBoxContainer" type="HBoxContainer" parent="." unique_id=321049213]
 layout_mode = 2
 script = ExtResource("1_7g5jr")
 
-[node name="Node2D" type="Node2D" parent="."]
+[node name="Node2D" type="Node2D" parent="." unique_id=756354088]

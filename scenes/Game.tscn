@@ -1,63 +1,69 @@
-[gd_scene load_steps=4 format=3 uid="uid://xxxocdb1a1ol"]
+[gd_scene format=3 uid="uid://xxxocdb1a1ol"]
 
 [ext_resource type="Script" uid="uid://r3eo1upb8eqb" path="res://scenes/Game.gd" id="1_cpr0p"]
 [ext_resource type="PackedScene" uid="uid://b35va7qr0a6n" path="res://components/ScorePanel.tscn" id="2_78awf"]
 [ext_resource type="PackedScene" uid="uid://djuivygn6ct5g" path="res://components/DartboardInput.tscn" id="3_s0nni"]
 
-[node name="Game" type="Control"]
+[node name="Game" type="Control" unique_id=523947993]
 layout_mode = 3
 anchors_preset = 0
 script = ExtResource("1_cpr0p")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 40.0
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=89786295]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 
-[node name="top_bar" type="HFlowContainer" parent="VBoxContainer"]
+[node name="top_bar" type="HFlowContainer" parent="VBoxContainer" unique_id=364492559]
 layout_mode = 2
 
-[node name="lbl_round" type="Label" parent="VBoxContainer/top_bar"]
+[node name="lbl_round" type="Label" parent="VBoxContainer/top_bar" unique_id=833425799]
 layout_mode = 2
 
-[node name="lbl_current_player" type="Label" parent="VBoxContainer/top_bar"]
+[node name="lbl_current_player" type="Label" parent="VBoxContainer/top_bar" unique_id=531711820]
 layout_mode = 2
 
-[node name="btn_menu" type="Button" parent="VBoxContainer/top_bar"]
+[node name="btn_menu" type="Button" parent="VBoxContainer/top_bar" unique_id=1158849970]
 layout_mode = 2
 text = "☰"
 
-[node name="score_panel" parent="VBoxContainer" instance=ExtResource("2_78awf")]
-
-[node name="dartboard" parent="VBoxContainer" instance=ExtResource("3_s0nni")]
-
-[node name="throw_panel" type="VBoxContainer" parent="VBoxContainer"]
+[node name="score_panel" parent="VBoxContainer" unique_id=1632028249 instance=ExtResource("2_78awf")]
 layout_mode = 2
 
-[node name="dart_row" type="HFlowContainer" parent="VBoxContainer/throw_panel"]
+[node name="dartboard" parent="VBoxContainer" unique_id=1513149278 instance=ExtResource("3_s0nni")]
+custom_minimum_size = Vector2(200, 200)
 layout_mode = 2
 
-[node name="dart1" type="Label" parent="VBoxContainer/throw_panel/dart_row"]
+[node name="throw_panel" type="VBoxContainer" parent="VBoxContainer" unique_id=570597172]
 layout_mode = 2
 
-[node name="dart2" type="Label" parent="VBoxContainer/throw_panel/dart_row"]
+[node name="dart_row" type="HFlowContainer" parent="VBoxContainer/throw_panel" unique_id=193143032]
 layout_mode = 2
 
-[node name="dart3" type="Label" parent="VBoxContainer/throw_panel/dart_row"]
+[node name="dart1" type="Label" parent="VBoxContainer/throw_panel/dart_row" unique_id=727838989]
 layout_mode = 2
 
-[node name="lbl_bust" type="Label" parent="VBoxContainer/throw_panel"]
+[node name="dart2" type="Label" parent="VBoxContainer/throw_panel/dart_row" unique_id=1722448503]
+layout_mode = 2
+
+[node name="dart3" type="Label" parent="VBoxContainer/throw_panel/dart_row" unique_id=749287503]
+layout_mode = 2
+
+[node name="lbl_bust" type="Label" parent="VBoxContainer/throw_panel" unique_id=574299751]
 visible = false
 layout_mode = 2
 text = "💥 BUST !"
 
-[node name="HFlowContainer" type="HFlowContainer" parent="VBoxContainer/throw_panel"]
+[node name="HFlowContainer" type="HFlowContainer" parent="VBoxContainer/throw_panel" unique_id=1910693108]
 layout_mode = 2
 
-[node name="btn_undo" type="Button" parent="VBoxContainer/throw_panel/HFlowContainer"]
+[node name="btn_undo" type="Button" parent="VBoxContainer/throw_panel/HFlowContainer" unique_id=649354714]
 layout_mode = 2
 text = "↩ Annuler"
 
-[node name="btn_next" type="Button" parent="VBoxContainer/throw_panel/HFlowContainer"]
+[node name="btn_next" type="Button" parent="VBoxContainer/throw_panel/HFlowContainer" unique_id=2040478342]
 layout_mode = 2
 text = "Tour suivant →"
