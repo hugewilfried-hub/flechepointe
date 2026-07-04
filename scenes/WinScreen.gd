@@ -7,10 +7,10 @@ extends Control
 const MENU_SCENE := "res://scenes/MainMenu.tscn"
 const GAME_SCENE := "res://scenes/Game.tscn"
 
-@onready var lbl_winner:       Label         = $VBox/LblWinner
-@onready var scores_container: VBoxContainer = $VBox/ScoresContainer
-@onready var btn_menu:         Button        = $VBox/BtnRow/BtnMenu
-@onready var btn_replay:       Button        = $VBox/BtnRow/BtnReplay
+@onready var lbl_winner:       Label         = $VBoxContainer/lbl_winner
+@onready var scores_container: VBoxContainer = $VBoxContainer/scores_container
+@onready var btn_menu:         Button        = $VBoxContainer/HFlowContainer/btn_menu
+@onready var btn_replay:       Button        = $VBoxContainer/HFlowContainer/btn_replay
 
 # ─────────────────────────────────────────────
 func _ready() -> void:
@@ -43,7 +43,7 @@ func _display_results() -> void:
 			sorted_players.sort_custom(func(a, b): return a["free_score"] > b["free_score"])
 
 	for i in sorted_players.size():
-		var p   := sorted_players[i]
+		var p: Dictionary = sorted_players[i]
 		var row := HBoxContainer.new()
 
 		# Rang

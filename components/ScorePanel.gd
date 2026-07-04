@@ -84,6 +84,15 @@ func _add_score_301_501(
 	var displayed_score: int = p["score"]
 	var is_current      := (idx == current_idx)
 
+	# ── Score du tour en cours ────────────────
+	var turn_lbl := Label.new()
+	turn_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	turn_lbl.add_theme_font_size_override("font_size", 13)
+	turn_lbl.add_theme_color_override("font_color", Color(0.65, 0.65, 0.65))
+	turn_lbl.text = "Tour: %d" % pending_pts if (is_current and pending_pts > 0) else "Tour: -"
+	col.add_child(turn_lbl)
+
+	# ── Score restant à faire ──────────────────
 	var score_lbl := Label.new()
 	score_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	score_lbl.add_theme_font_size_override("font_size", 26)
