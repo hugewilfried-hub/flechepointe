@@ -23,6 +23,7 @@ grow_vertical = 2
 
 [node name="top_bar" type="HFlowContainer" parent="VBoxContainer" unique_id=364492559]
 layout_mode = 2
+alignment = 1
 
 [node name="lbl_round" type="Label" parent="VBoxContainer/top_bar" unique_id=833425799]
 layout_mode = 2
@@ -39,14 +40,16 @@ custom_minimum_size = Vector2(0, 130)
 layout_mode = 2
 
 [node name="dartboard" parent="VBoxContainer" unique_id=1513149278 instance=ExtResource("3_s0nni")]
-custom_minimum_size = Vector2(200, 200)
+custom_minimum_size = Vector2(380, 380)
 layout_mode = 2
+size_flags_vertical = 3
 
 [node name="throw_panel" type="VBoxContainer" parent="VBoxContainer" unique_id=570597172]
 layout_mode = 2
 
 [node name="dart_row" type="HFlowContainer" parent="VBoxContainer/throw_panel" unique_id=193143032]
 layout_mode = 2
+alignment = 1
 
 [node name="dart1" type="Label" parent="VBoxContainer/throw_panel/dart_row" unique_id=727838989]
 layout_mode = 2
@@ -68,6 +71,7 @@ text = "💥 BUST !"
 
 [node name="HFlowContainer" type="HFlowContainer" parent="VBoxContainer/throw_panel" unique_id=1910693108]
 layout_mode = 2
+alignment = 1
 
 [node name="btn_undo" type="Button" parent="VBoxContainer/throw_panel/HFlowContainer" unique_id=649354714]
 layout_mode = 2

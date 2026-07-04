@@ -82,6 +82,7 @@ func _rebuild_names() -> void:
 	# Créer un LineEdit par joueur
 	for i in _player_count:
 		var row := HBoxContainer.new()
+		row.alignment = BoxContainer.ALIGNMENT_CENTER
 
 		var lbl := Label.new()
 		lbl.text             = "J%d" % (i + 1)

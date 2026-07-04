@@ -4,24 +4,35 @@
 
 [node name="MainMenu" type="Control"]
 layout_mode = 3
-anchors_preset = 0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 script = ExtResource("1_yqorp")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 40.0
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
 
 [node name="titre" type="Label" parent="VBoxContainer"]
 layout_mode = 2
+horizontal_alignment = 1
 text = "🎯 FLÉCHETTES 🎯 "
 
 [node name="label mode de jeu" type="Label" parent="VBoxContainer"]
 layout_mode = 2
+horizontal_alignment = 1
 text = "Mode de Jeu "
 
 [node name="mode_box" type="HFlowContainer" parent="VBoxContainer"]
 layout_mode = 2
+alignment = 1
 
 [node name="btn_301" type="Button" parent="VBoxContainer/mode_box"]
 layout_mode = 2
@@ -41,6 +52,7 @@ text = "Score Libre"
 
 [node name="joueur_row" type="HFlowContainer" parent="VBoxContainer"]
 layout_mode = 2
+alignment = 1
 
 [node name="Label" type="Label" parent="VBoxContainer/joueur_row"]
 layout_mode = 2
