@@ -27,7 +27,7 @@ var _bust: bool = false
 func _ready() -> void:
 	btn_end_free = get_node_or_null("VBoxContainer/throw_panel/HFlowContainer/btn_end_free")
 	
-		dartboard.dart_thrown.connect(_on_dart_thrown)
+	dartboard.dart_thrown.connect(_on_dart_thrown)
 	
 	btn_undo.pressed.connect(_on_undo)
 	btn_next.pressed.connect(_on_next_turn)
