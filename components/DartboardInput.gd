@@ -152,6 +152,11 @@ func _draw_numbers() -> void:
 #  Détection de clic / touch
 # ─────────────────────────────────────────────
 func _gui_input(event: InputEvent) -> void:
+	# Ignore les événements synthétiques (souris émulée depuis touch, ou
+	# touch émulé depuis souris) pour éviter un double dart_thrown par clic/tap.
+	if event.device == InputEvent.DEVICE_ID_EMULATION:
+		return
+
 	var pressed := false
 	var click_pos := Vector2.ZERO
 
