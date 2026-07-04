@@ -22,11 +22,13 @@ alignment = 1
 
 [node name="Label" type="Label" parent="VBoxContainer" unique_id=1368289506]
 layout_mode = 2
+theme_type_variation = &"TitleLabel"
 horizontal_alignment = 1
 text = "🏆 Victoire ! 🏆"
 
 [node name="lbl_winner" type="Label" parent="VBoxContainer" unique_id=1284643367]
 layout_mode = 2
+theme_type_variation = &"AccentLabel"
 horizontal_alignment = 1
 
 [node name="scores_container" type="VBoxContainer" parent="VBoxContainer" unique_id=2137219664]
@@ -42,4 +44,5 @@ text = "Nouvelle partie "
 
 [node name="btn_replay" type="Button" parent="VBoxContainer/HFlowContainer" unique_id=1564289602]
 layout_mode = 2
+theme_type_variation = &"AccentButton"
 text = "Rejouer (même joueurs) "

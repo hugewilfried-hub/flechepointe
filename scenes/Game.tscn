@@ -27,16 +27,18 @@ alignment = 1
 
 [node name="lbl_round" type="Label" parent="VBoxContainer/top_bar" unique_id=833425799]
 layout_mode = 2
+theme_type_variation = &"MutedLabel"
 
 [node name="lbl_current_player" type="Label" parent="VBoxContainer/top_bar" unique_id=531711820]
 layout_mode = 2
+theme_type_variation = &"AccentLabel"
 
 [node name="btn_menu" type="Button" parent="VBoxContainer/top_bar" unique_id=1158849970]
 layout_mode = 2
 text = "☰"
 
 [node name="score_panel" parent="VBoxContainer" unique_id=1632028249 instance=ExtResource("2_78awf")]
-custom_minimum_size = Vector2(0, 130)
+custom_minimum_size = Vector2(0, 150)
 layout_mode = 2
 
 [node name="dartboard" parent="VBoxContainer" unique_id=1513149278 instance=ExtResource("3_s0nni")]
@@ -53,20 +55,27 @@ alignment = 1
 
 [node name="dart1" type="Label" parent="VBoxContainer/throw_panel/dart_row" unique_id=727838989]
 layout_mode = 2
+theme_type_variation = &"MonoLabel"
 
 [node name="dart2" type="Label" parent="VBoxContainer/throw_panel/dart_row" unique_id=1722448503]
 layout_mode = 2
+theme_type_variation = &"MonoLabel"
 
 [node name="dart3" type="Label" parent="VBoxContainer/throw_panel/dart_row" unique_id=749287503]
 layout_mode = 2
+theme_type_variation = &"MonoLabel"
 
 [node name="lbl_total" type="Label" parent="VBoxContainer/throw_panel/dart_row" unique_id=749287504]
 layout_mode = 2
+theme_type_variation = &"ScoreLabel"
+theme_override_font_sizes/font_size = 18
 text = "= 0"
 
 [node name="lbl_bust" type="Label" parent="VBoxContainer/throw_panel" unique_id=574299751]
 visible = false
 layout_mode = 2
+theme_type_variation = &"DangerLabel"
+horizontal_alignment = 1
 text = "💥 BUST !"
 
 [node name="HFlowContainer" type="HFlowContainer" parent="VBoxContainer/throw_panel" unique_id=1910693108]
@@ -79,4 +88,5 @@ text = "↩ Annuler"
 
 [node name="btn_next" type="Button" parent="VBoxContainer/throw_panel/HFlowContainer" unique_id=2040478342]
 layout_mode = 2
+theme_type_variation = &"AccentButton"
 text = "Tour suivant →"

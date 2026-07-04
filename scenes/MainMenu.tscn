@@ -22,11 +22,13 @@ alignment = 1
 
 [node name="titre" type="Label" parent="VBoxContainer"]
 layout_mode = 2
+theme_type_variation = &"TitleLabel"
 horizontal_alignment = 1
 text = "🎯 FLÉCHETTES 🎯 "
 
 [node name="label mode de jeu" type="Label" parent="VBoxContainer"]
 layout_mode = 2
+theme_type_variation = &"MutedLabel"
 horizontal_alignment = 1
 text = "Mode de Jeu "
 
@@ -36,18 +38,22 @@ alignment = 1
 
 [node name="btn_301" type="Button" parent="VBoxContainer/mode_box"]
 layout_mode = 2
+theme_type_variation = &"SegButton"
 text = "301"
 
 [node name="btn_501" type="Button" parent="VBoxContainer/mode_box"]
 layout_mode = 2
+theme_type_variation = &"SegButton"
 text = "501"
 
 [node name="bnt_cricket" type="Button" parent="VBoxContainer/mode_box"]
 layout_mode = 2
+theme_type_variation = &"SegButton"
 text = "Cricket"
 
 [node name="bnt_free" type="Button" parent="VBoxContainer/mode_box"]
 layout_mode = 2
+theme_type_variation = &"SegButton"
 text = "Score Libre"
 
 [node name="joueur_row" type="HFlowContainer" parent="VBoxContainer"]
@@ -56,6 +62,7 @@ alignment = 1
 
 [node name="Label" type="Label" parent="VBoxContainer/joueur_row"]
 layout_mode = 2
+theme_type_variation = &"MutedLabel"
 text = "Joueur : "
 
 [node name="btn_minus" type="Button" parent="VBoxContainer/joueur_row"]
@@ -79,4 +86,5 @@ alignment = 1
 
 [node name="btn_start" type="Button" parent="VBoxContainer"]
 layout_mode = 2
+theme_type_variation = &"PrimaryButton"
 text = "▶  Commencer"

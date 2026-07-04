@@ -30,6 +30,10 @@ window/size/viewport_height=960
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 
+[gui]
+
+theme/custom="res://theme/game_theme.tres"
+
 [input_devices]
 
 pointing/emulate_touch_from_mouse=true
@@ -37,3 +41,4 @@ pointing/emulate_touch_from_mouse=true
 [rendering]
 
 renderer/rendering_method="mobile"
+environment/defaults/default_clear_color=Color(0.0784, 0.0706, 0.0588, 1)
