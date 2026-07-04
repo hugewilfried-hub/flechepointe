@@ -10,11 +10,12 @@ const MENU_SCENE := "res://scenes/MainMenu.tscn"
 @onready var lbl_round:   Label         = $VBoxContainer/top_bar/lbl_round
 @onready var lbl_player:  Label         = $VBoxContainer/top_bar/lbl_current_player
 @onready var btn_menu:    Button        = $VBoxContainer/top_bar/btn_menu
-@onready var score_panel                = $VBoxContainer/score_panel 
+@onready var score_panel                = $VBoxContainer/score_panel/HBoxContainer
 @onready var dartboard:   Control       = $VBoxContainer/dartboard
 @onready var dart1:       Label         = $VBoxContainer/throw_panel/dart_row/dart1
 @onready var dart2:       Label         = $VBoxContainer/throw_panel/dart_row/dart2
 @onready var dart3:       Label         = $VBoxContainer/throw_panel/dart_row/dart3
+@onready var lbl_total:   Label         = $VBoxContainer/throw_panel/dart_row/lbl_total
 @onready var lbl_bust:    Label         = $VBoxContainer/throw_panel/lbl_bust
 @onready var btn_undo:    Button        = $VBoxContainer/throw_panel/HFlowContainer/btn_undo
 @onready var btn_next:    Button        = $VBoxContainer/throw_panel/HFlowContainer/btn_next
@@ -180,6 +181,7 @@ func _refresh_throw_panel() -> void:
 	var labels := [dart1, dart2, dart3]
 	for i in 3:
 		labels[i].text = _darts[i]["label"] if i < _darts.size() else "—"
+	lbl_total.text = "= %d" % _turn_total()
 
 	lbl_bust.visible  = _bust
 	btn_undo.disabled = _darts.is_empty()

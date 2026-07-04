@@ -93,6 +93,13 @@ func _add_score_301_501(
 	col.add_child(turn_lbl)
 
 	# ── Score restant à faire ──────────────────
+	var restant_lbl := Label.new()
+	restant_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	restant_lbl.add_theme_font_size_override("font_size", 13)
+	restant_lbl.add_theme_color_override("font_color", Color(0.65, 0.65, 0.65))
+	restant_lbl.text = "Restant"
+	col.add_child(restant_lbl)
+
 	var score_lbl := Label.new()
 	score_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	score_lbl.add_theme_font_size_override("font_size", 26)
