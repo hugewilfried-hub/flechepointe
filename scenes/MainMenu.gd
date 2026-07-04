@@ -50,16 +50,14 @@ func _set_mode(mode: GameData.GameMode) -> void:
 	_refresh_mode_buttons()
 
 func _refresh_mode_buttons() -> void:
-	var selected_color := Color(0.20, 0.55, 0.90)
-	var normal_color   := Color(0.22, 0.22, 0.22)
 	for btn in [btn_301, btn_501, btn_cricket, btn_free]:
-		btn.add_theme_color_override("normal", normal_color)
+		btn.theme_type_variation = &"SegButton"
 
 	match _mode:
-		GameData.GameMode.MODE_301:     btn_301.add_theme_color_override("normal", selected_color)
-		GameData.GameMode.MODE_501:     btn_501.add_theme_color_override("normal", selected_color)
-		GameData.GameMode.CRICKET:      btn_cricket.add_theme_color_override("normal", selected_color)
-		GameData.GameMode.FREE_SCORE:   btn_free.add_theme_color_override("normal", selected_color)
+		GameData.GameMode.MODE_301:     btn_301.theme_type_variation     = &"SegButtonSelected"
+		GameData.GameMode.MODE_501:     btn_501.theme_type_variation     = &"SegButtonSelected"
+		GameData.GameMode.CRICKET:      btn_cricket.theme_type_variation = &"SegButtonSelected"
+		GameData.GameMode.FREE_SCORE:   btn_free.theme_type_variation    = &"SegButtonSelected"
 
 # ─────────────────────────────────────────────
 #  Nombre de joueurs
