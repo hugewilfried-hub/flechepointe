@@ -38,7 +38,7 @@ layout_mode = 2
 text = "☰"
 
 [node name="score_panel" parent="VBoxContainer" unique_id=1632028249 instance=ExtResource("2_78awf")]
-custom_minimum_size = Vector2(0, 150)
+custom_minimum_size = Vector2(0, 170)
 layout_mode = 2
 
 [node name="dartboard" parent="VBoxContainer" unique_id=1513149278 instance=ExtResource("3_s0nni")]
@@ -75,8 +75,8 @@ text = "= 0"
 visible = false
 layout_mode = 2
 theme_type_variation = &"DangerLabel"
-horizontal_alignment = 1
 text = "💥 BUST !"
+horizontal_alignment = 1
 
 [node name="HFlowContainer" type="HFlowContainer" parent="VBoxContainer/throw_panel" unique_id=1910693108]
 layout_mode = 2
