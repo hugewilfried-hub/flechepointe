@@ -58,7 +58,7 @@ func _display_results() -> void:
 
 	for i in sorted_players.size():
 		var p: Dictionary = sorted_players[i]
-		var is_winner := (p["name"] == GameData.players[GameData.winner_index]["name"])
+		var is_winner: bool = (p["name"] == GameData.players[GameData.winner_index]["name"])
 
 		var card := PanelContainer.new()
 		card.theme_type_variation = &"ActivePanel" if is_winner else &"PanelContainer"
