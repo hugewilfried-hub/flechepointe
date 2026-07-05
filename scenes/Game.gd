@@ -2,6 +2,19 @@ extends Control
 
 # ─────────────────────────────────────────────
 #  Game.gd — CORRIGÉ
+#
+#  Cette scène est le plateau de jeu : elle affiche la cible, le tableau
+#  de scores et les boutons "Annuler / Raté / Tour suivant". Elle ne
+#  contient QUE la logique d'un tour (3 fléchettes max) ; les règles
+#  de score (301/501/Cricket/Score libre) et l'état de la partie
+#  (joueurs, manche, victoire) vivent dans l'Autoload GameData.
+#
+#  Boucle de jeu résumée :
+#   1. Le joueur clique sur la cible (DartboardInput) -> _on_dart_thrown()
+#   2. Chaque fléchette est stockée dans _darts (max 3) -> _register_dart()
+#   3. Clic sur "Tour suivant" -> _apply_turn() applique les règles du
+#      mode en cours sur GameData.players, puis GameData.next_player()
+#      passe la main et on recommence un tour.
 # ─────────────────────────────────────────────
 
 const WIN_SCENE  := "res://scenes/WinScreen.tscn"
@@ -18,51 +31,106 @@ const MENU_SCENE := "res://scenes/MainMenu.tscn"
 @onready var lbl_total:   Label         = $VBoxContainer/throw_panel/dart_row/lbl_total
 @onready var lbl_bust:    Label         = $VBoxContainer/throw_panel/lbl_bust
 @onready var btn_undo:    Button        = $VBoxContainer/throw_panel/HFlowContainer/btn_undo
+@onready var btn_miss:    Button        = $VBoxContainer/throw_panel/HFlowContainer/btn_miss
 @onready var btn_next:    Button        = $VBoxContainer/throw_panel/HFlowContainer/btn_next
 #@onready var btn_end_free: Button       = $VBox/ThrowPanel/BtnRow/btn_End_Free
 var btn_end_free: Button = null
 
+# Les 3 fléchettes du tour en cours. Chaque entrée est un Dictionary
+# {"number": int, "multiplier": int, "label": String}. Vidé à chaque
+# nouveau tour (_on_next_turn).
 var _darts: Array[Dictionary] = []
+
+# true dès que le tour dépasse le score restant en 301/501 ("bust").
+# Dans ce cas les 3 fléchettes du tour ne comptent pour rien.
 var _bust: bool = false
 
 func _ready() -> void:
+	print("[Game] _ready() -> mode=%s, joueur courant=%s" % [
+		GameData.GameMode.keys()[GameData.game_mode],
+		GameData.get_current_player()["name"]
+	])
+
 	btn_end_free = get_node_or_null("VBoxContainer/throw_panel/HFlowContainer/btn_end_free")
-	
+
 	dartboard.dart_thrown.connect(_on_dart_thrown, CONNECT_REFERENCE_COUNTED)
-	
+
 	btn_undo.pressed.connect(_on_undo)
+	btn_miss.pressed.connect(_on_miss)
 	btn_next.pressed.connect(_on_next_turn)
 	btn_menu.pressed.connect(func(): get_tree().change_scene_to_file(MENU_SCENE))
 
+	# Le bouton "Terminer" (score libre) n'existe que pour ce mode, et
+	# uniquement s'il a été laissé dans la scène (sinon il reste null,
+	# géré par les gardes `btn_end_free != null` ci-dessous).
 	if btn_end_free != null:
 		btn_end_free.visible = (GameData.game_mode == GameData.GameMode.FREE_SCORE)
 		if not btn_end_free.pressed.is_connected(_on_end_free):
 			btn_end_free.pressed.connect(_on_end_free)
 
+	# En mode Cricket, la cible assombrit les numéros qui ne comptent pas
+	# (1-14) pour aider visuellement à viser les bons secteurs.
 	dartboard.cricket_mode = (GameData.game_mode == GameData.GameMode.CRICKET)
 	_start_turn()
 
+# ─────────────────────────────────────────────
+#  Réception d'une fléchette (clic sur la cible)
+# ─────────────────────────────────────────────
 func _on_dart_thrown(number: int, multiplier: int) -> void:
+	print("[Game] Fléchette reçue : number=%d, multiplier=%d" % [number, multiplier])
+
+	# Ignore si le tour est déjà complet (3 fléchettes) ou déjà "bust".
 	if _darts.size() >= 3 or _bust:
+		print("[Game] -> ignorée (tour complet ou bust)")
 		return
 
+	# En Cricket, un numéro hors 15-20/Bull ne rapporte jamais rien :
+	# on affiche juste un petit message et on ne l'enregistre pas.
 	if GameData.game_mode == GameData.GameMode.CRICKET:
 		if number not in GameData.CRICKET_NUMBERS:
+			print("[Game] -> hors jeu en Cricket (numéro %d)" % number)
 			_show_feedback("Hors jeu")
 			return
 
+	_register_dart(number, multiplier)
+
+## Bouton "✕ Raté" : simule une fléchette qui n'a touché aucune zone
+## comptante. Elle occupe quand même un des 3 emplacements du tour
+## (comme une vraie fléchette manquée), mais rapporte toujours 0 point
+## et n'ouvre aucune marque de Cricket.
+func _on_miss() -> void:
+	print("[Game] Bouton Raté pressé")
+	if _darts.size() >= 3 or _bust:
+		print("[Game] -> ignoré (tour complet ou bust)")
+		return
+	_register_dart(0, 0)
+
+## Point d'entrée commun pour ajouter une fléchette au tour, que ce soit
+## via la cible (_on_dart_thrown) ou via le bouton Raté (_on_miss).
+func _register_dart(number: int, multiplier: int) -> void:
 	var label := _dart_to_label(number, multiplier)
 	_darts.append({"number": number, "multiplier": multiplier, "label": label})
+	print("[Game] Fléchette #%d ajoutée : %s (total du tour = %d)" % [_darts.size(), label, _turn_total()])
 
+	# Règle du "bust" en 301/501 : si le total du tour dépasse le score
+	# restant, le joueur "casse" (bust) et perdra son tour entier
+	# (voir _apply_301_501). On le détecte dès la 1ère/2e/3e fléchette
+	# pour prévenir immédiatement le joueur à l'écran.
 	if GameData.game_mode in [GameData.GameMode.MODE_301, GameData.GameMode.MODE_501]:
 		var potential: int = GameData.get_current_player()["score"] - _turn_total()
 		if potential < 0:
 			_bust = true
+			print("[Game] BUST ! Score restant potentiel = %d (< 0)" % potential)
 
 	_refresh_throw_panel()
 	btn_next.disabled = false
 
+## Convertit une fléchette (numéro + multiplicateur) en texte affiché
+## dans la rangée dart1/dart2/dart3, ex: "T20" = Triple 20, "D25"/"Bull"
+## = Bull (double), "Raté" = notre fléchette à 0 point.
 func _dart_to_label(number: int, multiplier: int) -> String:
+	if number == 0:
+		return "Raté"
 	if number == 25:
 		return "Bull" if multiplier == 2 else "25"
 	match multiplier:
@@ -70,24 +138,33 @@ func _dart_to_label(number: int, multiplier: int) -> String:
 		3: return "T%d" % number
 		_: return str(number)
 
+## Somme des points des fléchettes déjà lancées ce tour (numéro * multiplicateur).
 func _turn_total() -> int:
 	var total := 0
 	for d in _darts:
 		total += d["number"] * d["multiplier"]
 	return total
 
+# ─────────────────────────────────────────────
+#  Annuler / Tour suivant
+# ─────────────────────────────────────────────
 func _on_undo() -> void:
 	if _darts.is_empty():
 		return
-	_darts.pop_back()
-	_bust = false
+	var removed: Dictionary = _darts.pop_back()
+	_bust = false  # on ré-évaluera le bust normalement à la prochaine fléchette
+	print("[Game] Annulation de la dernière fléchette : %s" % removed["label"])
 	_refresh_throw_panel()
 	btn_next.disabled = _darts.is_empty()
 
 func _on_next_turn() -> void:
+	print("[Game] --- Fin de tour pour %s (fléchettes = %d) ---" % [
+		GameData.get_current_player()["name"], _darts.size()
+	])
 	_apply_turn()
 
 	if GameData.game_over:
+		print("[Game] Partie terminée ! Gagnant = %s" % GameData.players[GameData.winner_index]["name"])
 		get_tree().change_scene_to_file(WIN_SCENE)
 		return
 
@@ -96,7 +173,11 @@ func _on_next_turn() -> void:
 	_bust = false
 	_start_turn()
 
+## Mode Score libre uniquement : le joueur peut arrêter la partie à tout
+## moment (pas de score cible à atteindre). On applique son tour en
+## cours, puis on cherche le meilleur score parmi tous les joueurs.
 func _on_end_free() -> void:
+	print("[Game] Fin de partie (Score libre) demandée par le joueur")
 	_apply_free(GameData.get_current_player())
 	GameData.game_over = true
 	var best_score := -1
@@ -106,6 +187,9 @@ func _on_end_free() -> void:
 			GameData.winner_index = i
 	get_tree().change_scene_to_file(WIN_SCENE)
 
+# ─────────────────────────────────────────────
+#  Application des règles selon le mode
+# ─────────────────────────────────────────────
 func _apply_turn() -> void:
 	var player := GameData.get_current_player()
 	match GameData.game_mode:
@@ -116,8 +200,13 @@ func _apply_turn() -> void:
 		GameData.GameMode.FREE_SCORE:
 			_apply_free(player)
 
+## Règles 301/501 : le score démarre à 301 ou 501 et diminue à chaque
+## tour. Si le total du tour amène le score en dessous de 0 ("bust"),
+## le tour entier est annulé et le score ne bouge pas. Atteindre
+## exactement 0 déclenche la victoire.
 func _apply_301_501(player: Dictionary) -> void:
 	if _bust:
+		print("[Game] %s a fait BUST -> score inchangé (%d)" % [player["name"], player["score"]])
 		player["history"].append({"darts": _darts.duplicate(), "bust": true})
 		return
 
@@ -125,38 +214,57 @@ func _apply_301_501(player: Dictionary) -> void:
 	var new_score: int = player["score"] - total
 
 	if new_score < 0:
+		print("[Game] %s -> bust détecté à l'application (%d - %d < 0)" % [player["name"], player["score"], total])
 		player["history"].append({"darts": _darts.duplicate(), "bust": true})
 		return
 
 	player["score"] = new_score
 	player["history"].append({"darts": _darts.duplicate(), "score_after": new_score})
+	print("[Game] %s marque %d points -> score restant = %d" % [player["name"], total, new_score])
 
 	if new_score == 0:
+		print("[Game] %s atteint 0 pile -> VICTOIRE" % player["name"])
 		GameData.game_over    = true
 		GameData.winner_index = GameData.current_player_index
 
+## Règles Cricket : chaque numéro (15-20 + Bull) doit être "ouvert" avec
+## 3 marques avant de rapporter des points. Une fléchette peut à la fois
+## finir d'ouvrir un numéro ET commencer à marquer des points si son
+## multiplicateur dépasse ce qu'il fallait pour l'ouvrir (ex: une triple
+## sur un numéro à 1 marque ouvre les 2 marques manquantes + marque 1
+## fois des points). Un numéro déjà fermé par le joueur ne rapporte plus
+## rien si tous les adversaires l'ont aussi fermé (all_players_closed).
 func _apply_cricket(player: Dictionary) -> void:
 	for d in _darts:
 		var n: int = d["number"]
 		var m: int = d["multiplier"]
 
 		if n not in GameData.CRICKET_NUMBERS:
-			continue
+			continue  # numéro hors jeu (ne devrait plus arriver ici, filtré en amont)
 
 		var current_marks: int = player["cricket_marks"].get(n, 0)
 
+		# Cas 1 : le numéro est déjà fermé (3 marques) -> tout le
+		# multiplicateur devient des points (si un adversaire n'a pas
+		# encore fermé ce numéro).
 		if current_marks >= 3:
 			if not GameData.all_players_closed(n):
 				player["cricket_score"] += n * m
+				print("[Game] %s marque %d pts sur le %d (déjà fermé)" % [player["name"], n * m, n])
 			continue
 
+		# Cas 2 : le numéro n'est pas encore fermé -> une partie du
+		# multiplicateur sert à ouvrir les marques manquantes, le reste
+		# (s'il y en a) devient des points immédiatement.
 		var to_open   := mini(m, 3 - current_marks)
 		var scoring_m := m - to_open
 		player["cricket_marks"][n] += to_open
+		print("[Game] %s ouvre %d marque(s) sur le %d (total = %d/3)" % [player["name"], to_open, n, player["cricket_marks"][n]])
 
 		if player["cricket_marks"][n] >= 3 and scoring_m > 0:
 			if not GameData.all_players_closed(n):
 				player["cricket_score"] += n * scoring_m
+				print("[Game] %s marque %d pts supplémentaires sur le %d (fermeture + surplus)" % [player["name"], n * scoring_m, n])
 
 	player["history"].append({"darts": _darts.duplicate()})
 
@@ -164,11 +272,20 @@ func _apply_cricket(player: Dictionary) -> void:
 		GameData.game_over    = true
 		GameData.winner_index = GameData.current_player_index
 
+## Règles Score libre : pas de score cible, on additionne simplement les
+## points de chaque tour. La partie se termine seulement via le bouton
+## "Terminer" (_on_end_free), pas automatiquement.
 func _apply_free(player: Dictionary) -> void:
 	var total := _turn_total()
 	player["free_score"] += total
 	player["history"].append({"darts": _darts.duplicate(), "score_after": player["free_score"]})
+	print("[Game] %s ajoute %d pts -> total = %d" % [player["name"], total, player["free_score"]])
 
+# ─────────────────────────────────────────────
+#  Rafraîchissement de l'interface
+#  (appelé souvent : pas de print ici pour ne pas noyer la console,
+#  les vrais événements de jeu sont déjà tracés plus haut)
+# ─────────────────────────────────────────────
 func _start_turn() -> void:
 	_refresh_throw_panel()
 	_refresh_top_bar()
@@ -186,11 +303,17 @@ func _refresh_throw_panel() -> void:
 	lbl_bust.visible  = _bust
 	btn_undo.disabled = _darts.is_empty()
 
+	# En Score libre, "Tour suivant" reste toujours actif (le joueur peut
+	# passer sans lancer, ou terminer via le bouton dédié).
 	if GameData.game_mode != GameData.GameMode.FREE_SCORE:
 		btn_next.disabled = _darts.is_empty()
 
 	_refresh_score_panel()
 
+## Transmet l'état courant au ScorePanel (composant réutilisable qui sait
+## se dessiner différemment selon le mode). `pending` = le total du tour
+## en cours, utilisé par ScorePanel pour afficher un score "potentiel"
+## en 301/501 avant de valider le tour.
 func _refresh_score_panel() -> void:
 	var pending := 0
 	if not _bust:
@@ -204,6 +327,8 @@ func _refresh_score_panel() -> void:
 			pending
 		)
 
+## Affiche un message temporaire (ex: "Hors jeu") puis revient à
+## l'affichage normal du bust après 1.2 seconde.
 func _show_feedback(msg: String) -> void:
 	lbl_bust.text    = msg
 	lbl_bust.visible = true

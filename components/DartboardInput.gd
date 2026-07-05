@@ -4,6 +4,17 @@ extends Control
 #  DartboardInput.gd
 #  Cible visuelle + détection des zones cliquées
 #  Signal émis : dart_thrown(number, multiplier)
+#
+#  Ce script fait deux choses bien séparées :
+#   1. _draw() dessine la cible (secteurs, anneaux, numéros) à chaque
+#      redimensionnement de la fenêtre.
+#   2. _gui_input()/_hit_test() convertissent la position d'un clic/tap
+#      en (numéro, multiplicateur) en comparant sa distance au centre
+#      (quel anneau ?) et son angle (quel secteur ?), puis émettent le
+#      signal `dart_thrown` que Game.gd écoute.
+#  Aucune règle de score n'est ici : ce composant ne fait QUE traduire
+#  un clic en "quel numéro, quel multiplicateur", indépendamment du mode
+#  de jeu en cours.
 # ─────────────────────────────────────────────
 
 signal dart_thrown(number: int, multiplier: int)
@@ -151,6 +162,11 @@ func _draw_numbers() -> void:
 # ─────────────────────────────────────────────
 #  Détection de clic / touch
 # ─────────────────────────────────────────────
+## Reçoit tous les événements souris/tactile de ce Control. On ne garde
+## que le clic gauche (souris) ou le premier contact (tactile), et on
+## ignore les événements "émulés" (Godot peut fabriquer un faux clic
+## souris à partir d'un tap tactile et vice-versa) pour ne pas déclencher
+## deux fois `dart_thrown` pour un seul vrai geste du joueur.
 func _gui_input(event: InputEvent) -> void:
 	# Ignore les événements synthétiques (souris émulée depuis touch, ou
 	# touch émulé depuis souris) pour éviter un double dart_thrown par clic/tap.
@@ -175,30 +191,47 @@ func _gui_input(event: InputEvent) -> void:
 	var result: Variant = _hit_test(click_pos)
 	if result != null:
 		accept_event()
+		print("[Dartboard] Clic détecté -> numéro=%d, multiplicateur=%d" % [result["number"], result["multiplier"]])
 		dart_thrown.emit(result["number"], result["multiplier"])
+	else:
+		print("[Dartboard] Clic hors cible (ignoré)")
 
+## Convertit une position de clic (en pixels, relative à ce Control) en
+## (numéro, multiplicateur). Deux calculs indépendants :
+##   - `frac`  = distance au centre / rayon -> détermine l'ANNEAU touché
+##     (Bull, simple, triple, simple, double, ou hors cible).
+##   - `angle` -> détermine le SECTEUR (lequel des 20 numéros).
+## Renvoie null si le clic tombe hors de la cible ou dans une zone morte
+## (entre deux anneaux qui ne rapportent rien).
 func _hit_test(pos: Vector2) -> Variant:
 	var diff  := pos - _center
 	var frac  := diff.length() / _radius
 	var angle := atan2(diff.y, diff.x)
 
 	# ── Zone Bull ────────────────────────────
+	# Double Bull (centre) = 25 x2, Bull simple (anneau autour) = 25 x1.
 	if frac <= R_BULLSEYE:
 		return {"number": 25, "multiplier": 2}
 	if frac <= R_BULL:
 		return {"number": 25, "multiplier": 1}
 
 	# ── Hors cible ───────────────────────────
+	# On tolère une petite marge (+0.02) au-delà du double pour rattraper
+	# les clics légèrement imprécis sur le bord extérieur.
 	if frac > R_DOUBLE_E + 0.02:
 		return null
 
 	# ── Secteur numéroté ─────────────────────
+	# La cible a 20 secteurs égaux (TAU / 20). On décale l'angle pour que
+	# le secteur du "20" (en haut, -PI/2) soit bien centré sur lui-même,
+	# puis on trouve l'index de secteur et son numéro dans NUMBERS[].
 	var seg        := TAU / 20.0
 	var offset     := fposmod(angle + PI / 2.0 + seg / 2.0, TAU)
 	var sector_idx := int(offset / seg) % 20
 	var number     := NUMBERS[sector_idx]
 
 	# ── Multiplicateur ───────────────────────
+	# Du centre vers le bord : simple, anneau triple, simple, anneau double.
 	var mult := 0
 	if   frac <= R_TRIPLE_S: mult = 1
 	elif frac <= R_TRIPLE_E: mult = 3

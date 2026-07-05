@@ -2,6 +2,10 @@ extends Control
 
 # ─────────────────────────────────────────────
 #  MainMenu.gd
+#  Écran de configuration avant de lancer une partie : choix du mode,
+#  du nombre de joueurs et de leurs noms. Ne touche à GameData qu'au
+#  moment de démarrer (_on_start) : tant qu'on est sur cet écran, tout
+#  est stocké dans des variables locales (_mode, _player_count).
 # ─────────────────────────────────────────────
 
 const GAME_SCENE := "res://scenes/Game.tscn"
@@ -46,6 +50,7 @@ func _ready() -> void:
 #  Mode de jeu
 # ─────────────────────────────────────────────
 func _set_mode(mode: GameData.GameMode) -> void:
+	print("[MainMenu] Mode sélectionné : %s" % GameData.GameMode.keys()[mode])
 	_mode = mode
 	_refresh_mode_buttons()
 
@@ -62,8 +67,11 @@ func _refresh_mode_buttons() -> void:
 # ─────────────────────────────────────────────
 #  Nombre de joueurs
 # ─────────────────────────────────────────────
+## +1/-1 joueur, borné entre MIN_PLAYERS et MAX_PLAYERS. Reconstruit
+## aussitôt les champs de nom (_rebuild_names) pour ajouter/retirer une ligne.
 func _change_count(delta: int) -> void:
 	_player_count = clamp(_player_count + delta, MIN_PLAYERS, MAX_PLAYERS)
+	print("[MainMenu] Nombre de joueurs -> %d" % _player_count)
 	_rebuild_names()
 	_refresh_count_label()
 
@@ -72,6 +80,9 @@ func _refresh_count_label() -> void:
 	btn_minus.disabled = (_player_count <= MIN_PLAYERS)
 	btn_plus.disabled  = (_player_count >= MAX_PLAYERS)
 
+## Reconstruit la liste de champs "Joueur X" à partir de _player_count.
+## Comme pour ScorePanel, on détruit tout et on recrée : plus simple à
+## maintenir que d'ajouter/retirer une ligne au bon endroit.
 func _rebuild_names() -> void:
 	# Supprimer les anciens champs
 	for child in names_container.get_children():
@@ -102,6 +113,9 @@ func _rebuild_names() -> void:
 # ─────────────────────────────────────────────
 #  Démarrage
 # ─────────────────────────────────────────────
+## Lit le texte de chaque LineEdit (nom vide -> "Joueur N" par défaut),
+## initialise la partie dans GameData, puis change de scène vers Game.tscn.
+## C'est le SEUL endroit où MainMenu écrit dans GameData.
 func _on_start() -> void:
 	var names: Array[String] = []
 	for i in _player_count:
@@ -110,5 +124,6 @@ func _on_start() -> void:
 		var n    := edit.text.strip_edges()
 		names.append(n if n != "" else "Joueur %d" % (i + 1))
 
+	print("[MainMenu] Démarrage de la partie : mode=%s, joueurs=%s" % [GameData.GameMode.keys()[_mode], names])
 	GameData.setup_game(_mode, names)
 	get_tree().change_scene_to_file(GAME_SCENE)

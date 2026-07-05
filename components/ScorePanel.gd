@@ -4,6 +4,14 @@ extends HBoxContainer
 #  ScorePanel.gd
 #  Attaché au HBoxContainer racine de ScorePanel.tscn
 #  Appelé depuis Game.gd via refresh(...)
+#
+#  Ce composant ne garde AUCUN état lui-même : à chaque appel de
+#  refresh(), il détruit tous ses enfants et reconstruit entièrement le
+#  tableau de scores à partir des données fraîches de GameData. C'est
+#  volontairement "brutal" (pas d'optimisation à mettre à jour juste ce
+#  qui change) mais ça évite tout bug de désynchronisation avec l'état
+#  réel de la partie — l'affichage est toujours le reflet exact de
+#  GameData.players au moment de l'appel.
 # ─────────────────────────────────────────────
 
 const MARK_ICONS := ["", "/", "✕", "●"]  # 0, 1, 2, 3 marques
@@ -20,7 +28,12 @@ func refresh(
 		mode: GameData.GameMode,
 		pending_pts: int) -> void:
 
-	# Vider les colonnes précédentes
+	print("[ScorePanel] refresh() -> mode=%s, joueur courant=%d, pending=%d" % [
+		GameData.GameMode.keys()[mode], current_idx, pending_pts
+	])
+
+	# Vider les colonnes précédentes (une carte par joueur, reconstruite
+	# entièrement à chaque appel : voir la note en haut du fichier).
 	for child in get_children():
 		child.queue_free()
 
@@ -31,6 +44,9 @@ func refresh(
 
 # ─────────────────────────────────────────────
 #  Construction d'une colonne joueur
+#  Une "colonne" = une carte (PanelContainer) contenant nom + score +
+#  éventuellement une flèche "▲" si c'est ce joueur qui doit lancer.
+#  Le contenu du score change totalement selon le mode (voir plus bas).
 # ─────────────────────────────────────────────
 func _make_player_column(
 		p: Dictionary,
@@ -78,6 +94,9 @@ func _make_player_column(
 # ─────────────────────────────────────────────
 #  Affichages selon le mode
 # ─────────────────────────────────────────────
+## Affichage 301/501 : montre le score restant, et si c'est le tour du
+## joueur en cours, calcule un score "potentiel" en temps réel (score -
+## points déjà lancés ce tour) pour prévisualiser le bust avant validation.
 func _add_score_301_501(
 		col: VBoxContainer,
 		p: Dictionary,
@@ -119,6 +138,11 @@ func _add_score_301_501(
 
 	col.add_child(score_lbl)
 
+## Affichage Cricket : le score de points en gros, puis une ligne
+## horizontale avec une mini-colonne par numéro (15..20 + Bull) montrant
+## sa marque actuelle (rien / "/" = 1 marque / "✕" = 2 marques /
+## "●" = 3 marques = fermé). Couleur brass = en cours d'ouverture,
+## vert = numéro fermé par ce joueur.
 func _add_score_cricket(
 		col: VBoxContainer,
 		p: Dictionary,
@@ -133,28 +157,37 @@ func _add_score_cricket(
 	pts_lbl.add_theme_font_size_override("font_size", 20)
 	col.add_child(pts_lbl)
 
-	# Marques par numéro (15..20 + Bull)
+	# Marques par numéro (15..20 + Bull), alignées horizontalement
+	var row := HBoxContainer.new()
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.add_theme_constant_override("separation", 6)
+
 	for n in GameData.CRICKET_NUMBERS:
 		var marks: int = p["cricket_marks"].get(n, 0)
-		var row := HBoxContainer.new()
-		row.alignment = BoxContainer.ALIGNMENT_CENTER
+		var cell := VBoxContainer.new()
+		cell.alignment = BoxContainer.ALIGNMENT_CENTER
+		cell.add_theme_constant_override("separation", 0)
 
 		var n_lbl := Label.new()
-		n_lbl.text = "%d " % n if n != 25 else "B  "
+		n_lbl.text = str(n) if n != 25 else "B"
+		n_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		n_lbl.theme_type_variation = &"MutedLabel"
-		n_lbl.add_theme_font_size_override("font_size", 11)
-		row.add_child(n_lbl)
+		n_lbl.add_theme_font_size_override("font_size", 10)
+		cell.add_child(n_lbl)
 
 		var m_lbl := Label.new()
 		m_lbl.text = MARK_ICONS[clamp(marks, 0, 3)]
+		m_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		m_lbl.add_theme_font_size_override("font_size", 13)
 		if marks >= 3:
 			m_lbl.add_theme_color_override("font_color", Color(0.1725, 0.5412, 0.3059))  # green
 		elif marks > 0:
 			m_lbl.add_theme_color_override("font_color", Color(0.8196, 0.6471, 0.2392))  # brass
-		row.add_child(m_lbl)
+		cell.add_child(m_lbl)
 
-		col.add_child(row)
+		row.add_child(cell)
+
+	col.add_child(row)
 
 func _add_score_free(col: VBoxContainer, p: Dictionary) -> void:
 	var lbl := Label.new()

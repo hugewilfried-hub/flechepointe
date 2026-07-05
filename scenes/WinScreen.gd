@@ -2,6 +2,11 @@ extends Control
 
 # ─────────────────────────────────────────────
 #  WinScreen.gd
+#  Écran affiché une fois GameData.game_over == true (voir Game.gd).
+#  Ne modifie plus l'état de la partie : il se contente de LIRE
+#  GameData.players / winner_index pour construire un classement trié
+#  selon le mode joué, puis propose "Rejouer" (GameData.replay) ou
+#  "Menu" (retour à MainMenu, GameData reste tel quel).
 # ─────────────────────────────────────────────
 
 const MENU_SCENE := "res://scenes/MainMenu.tscn"
@@ -14,25 +19,34 @@ const GAME_SCENE := "res://scenes/Game.tscn"
 
 # ─────────────────────────────────────────────
 func _ready() -> void:
+	print("[WinScreen] _ready() -> winner_index=%d" % GameData.winner_index)
 	btn_menu.pressed.connect(func():  get_tree().change_scene_to_file(MENU_SCENE))
 	btn_replay.pressed.connect(_on_replay)
 
 	_display_results()
 
 # ─────────────────────────────────────────────
+## Construit tout l'écran : titre du gagnant + classement complet.
+## Comme ScorePanel/MainMenu, on détruit et recrée les cartes de score
+## à chaque appel plutôt que de les mettre à jour (plus simple, et ici
+## appelé une seule fois de toute façon, à l'arrivée sur l'écran).
 func _display_results() -> void:
 	# ── Titre gagnant ────────────────────────
 	if GameData.winner_index >= 0:
 		var winner := GameData.players[GameData.winner_index]
 		lbl_winner.text = "🏆  %s gagne !" % winner["name"]
+		print("[WinScreen] Gagnant : %s" % winner["name"])
 	else:
 		lbl_winner.text = "Partie terminée"
+		print("[WinScreen] Pas de gagnant désigné (winner_index=-1)")
 
 	# ── Tableau des scores ───────────────────
 	for child in scores_container.get_children():
 		child.queue_free()
 
-	# Trier les joueurs selon le mode
+	# Trier les joueurs selon le mode : en 301/501 le meilleur a le score
+	# restant le PLUS BAS (proche de 0), alors qu'en Cricket/Score libre
+	# le meilleur a le score de points le PLUS HAUT.
 	var sorted_players := GameData.players.duplicate()
 	match GameData.game_mode:
 		GameData.GameMode.MODE_301, GameData.GameMode.MODE_501:
@@ -119,5 +133,6 @@ func _marks_icon(marks: int) -> String:
 
 # ─────────────────────────────────────────────
 func _on_replay() -> void:
+	print("[WinScreen] Bouton Rejouer pressé")
 	GameData.replay()
 	get_tree().change_scene_to_file(GAME_SCENE)

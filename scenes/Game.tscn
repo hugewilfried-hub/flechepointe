@@ -38,11 +38,11 @@ layout_mode = 2
 text = "☰"
 
 [node name="score_panel" parent="VBoxContainer" unique_id=1632028249 instance=ExtResource("2_78awf")]
-custom_minimum_size = Vector2(0, 150)
+custom_minimum_size = Vector2(0, 170)
 layout_mode = 2
 
 [node name="dartboard" parent="VBoxContainer" unique_id=1513149278 instance=ExtResource("3_s0nni")]
-custom_minimum_size = Vector2(380, 380)
+custom_minimum_size = Vector2(380, 360)
 layout_mode = 2
 size_flags_vertical = 3
 
@@ -75,8 +75,8 @@ text = "= 0"
 visible = false
 layout_mode = 2
 theme_type_variation = &"DangerLabel"
-horizontal_alignment = 1
 text = "💥 BUST !"
+horizontal_alignment = 1
 
 [node name="HFlowContainer" type="HFlowContainer" parent="VBoxContainer/throw_panel" unique_id=1910693108]
 layout_mode = 2
@@ -85,6 +85,10 @@ alignment = 1
 [node name="btn_undo" type="Button" parent="VBoxContainer/throw_panel/HFlowContainer" unique_id=649354714]
 layout_mode = 2
 text = "↩ Annuler"
+
+[node name="btn_miss" type="Button" parent="VBoxContainer/throw_panel/HFlowContainer" unique_id=-573918441]
+layout_mode = 2
+text = "✕ Raté"
 
 [node name="btn_next" type="Button" parent="VBoxContainer/throw_panel/HFlowContainer" unique_id=2040478342]
 layout_mode = 2
