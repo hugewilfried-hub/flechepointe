@@ -22,6 +22,7 @@ const MENU_SCENE := "res://scenes/MainMenu.tscn"
 
 @onready var lbl_round:   Label         = $VBoxContainer/top_bar/lbl_round
 @onready var lbl_player:  Label         = $VBoxContainer/top_bar/lbl_current_player
+@onready var lbl_double_out: Label      = $VBoxContainer/top_bar/lbl_double_out
 @onready var btn_menu:    Button        = $VBoxContainer/top_bar/btn_menu
 @onready var score_panel                = $VBoxContainer/score_panel/HBoxContainer
 @onready var dartboard:   Control       = $VBoxContainer/dartboard
@@ -33,6 +34,7 @@ const MENU_SCENE := "res://scenes/MainMenu.tscn"
 @onready var btn_undo:    Button        = $VBoxContainer/throw_panel/HFlowContainer/btn_undo
 @onready var btn_miss:    Button        = $VBoxContainer/throw_panel/HFlowContainer/btn_miss
 @onready var btn_next:    Button        = $VBoxContainer/throw_panel/HFlowContainer/btn_next
+@onready var history_list: VBoxContainer = $VBoxContainer/history_panel/history_scroll/history_list
 #@onready var btn_end_free: Button       = $VBox/ThrowPanel/BtnRow/btn_End_Free
 var btn_end_free: Button = null
 
@@ -44,6 +46,12 @@ var _darts: Array[Dictionary] = []
 # true dès que le tour dépasse le score restant en 301/501 ("bust").
 # Dans ce cas les 3 fléchettes du tour ne comptent pour rien.
 var _bust: bool = false
+
+# Journal des tours joués depuis le début de la partie (affiché dans
+# history_panel), le plus récent en premier. Purement local à l'écran :
+# repart de zéro à chaque nouvelle partie/rejoue (nouvelle instance de Game).
+const MAX_HISTORY_ENTRIES := 50
+var _turn_log: Array[String] = []
 
 func _ready() -> void:
 	print("[Game] _ready() -> mode=%s, joueur courant=%s" % [
@@ -71,6 +79,10 @@ func _ready() -> void:
 	# En mode Cricket, la cible assombrit les numéros qui ne comptent pas
 	# (1-14) pour aider visuellement à viser les bons secteurs.
 	dartboard.cricket_mode = (GameData.game_mode == GameData.GameMode.CRICKET)
+
+	# Rappel visuel de la règle "sortie double" si elle est active (301/501 uniquement).
+	lbl_double_out.visible = GameData.double_out and GameData.game_mode in [GameData.GameMode.MODE_301, GameData.GameMode.MODE_501]
+
 	_start_turn()
 
 # ─────────────────────────────────────────────
@@ -208,6 +220,7 @@ func _apply_301_501(player: Dictionary) -> void:
 	if _bust:
 		print("[Game] %s a fait BUST -> score inchangé (%d)" % [player["name"], player["score"]])
 		player["history"].append({"darts": _darts.duplicate(), "bust": true})
+		_log_turn(player, true)
 		return
 
 	var total     := _turn_total()
@@ -216,16 +229,39 @@ func _apply_301_501(player: Dictionary) -> void:
 	if new_score < 0:
 		print("[Game] %s -> bust détecté à l'application (%d - %d < 0)" % [player["name"], player["score"], total])
 		player["history"].append({"darts": _darts.duplicate(), "bust": true})
+		_log_turn(player, true)
+		return
+
+	# Règle "sortie double" : si activée, atteindre 0 ne suffit pas, il
+	# faut que la fléchette qui ramène le score à exactement 0 soit un
+	# double (ou le Bull double = 50). Sinon, le tour est un bust classique
+	# (le score ne bouge pas), comme dans une vraie partie de fléchettes.
+	if new_score == 0 and GameData.double_out and not _finished_on_double(player["score"]):
+		print("[Game] %s atteint 0 mais pas sur un double (sortie double active) -> BUST" % player["name"])
+		player["history"].append({"darts": _darts.duplicate(), "bust": true})
+		_log_turn(player, true)
 		return
 
 	player["score"] = new_score
 	player["history"].append({"darts": _darts.duplicate(), "score_after": new_score})
 	print("[Game] %s marque %d points -> score restant = %d" % [player["name"], total, new_score])
+	_log_turn(player, false)
 
 	if new_score == 0:
 		print("[Game] %s atteint 0 pile -> VICTOIRE" % player["name"])
 		GameData.game_over    = true
 		GameData.winner_index = GameData.current_player_index
+
+## Retrouve la fléchette qui a ramené le score à exactement 0 (première
+## fléchette du tour dont le total cumulé égale le score de départ) et
+## indique si c'est un double. Utilisé par la règle "sortie double".
+func _finished_on_double(start_score: int) -> bool:
+	var running := 0
+	for d in _darts:
+		running += d["number"] * d["multiplier"]
+		if running == start_score:
+			return d["multiplier"] == 2
+	return false
 
 ## Règles Cricket : chaque numéro (15-20 + Bull) doit être "ouvert" avec
 ## 3 marques avant de rapporter des points. Une fléchette peut à la fois
@@ -267,6 +303,7 @@ func _apply_cricket(player: Dictionary) -> void:
 				print("[Game] %s marque %d pts supplémentaires sur le %d (fermeture + surplus)" % [player["name"], n * scoring_m, n])
 
 	player["history"].append({"darts": _darts.duplicate()})
+	_log_turn(player, false)
 
 	if GameData.cricket_win(GameData.current_player_index):
 		GameData.game_over    = true
@@ -280,6 +317,7 @@ func _apply_free(player: Dictionary) -> void:
 	player["free_score"] += total
 	player["history"].append({"darts": _darts.duplicate(), "score_after": player["free_score"]})
 	print("[Game] %s ajoute %d pts -> total = %d" % [player["name"], total, player["free_score"]])
+	_log_turn(player, false)
 
 # ─────────────────────────────────────────────
 #  Rafraîchissement de l'interface
@@ -326,6 +364,55 @@ func _refresh_score_panel() -> void:
 			GameData.game_mode,
 			pending
 		)
+
+## Ajoute une ligne au journal des tours affiché dans history_panel, à
+## partir de l'état du joueur APRÈS application du tour (bust ou non).
+## Sert à visualiser le déroulé de la partie sans attendre le WinScreen.
+func _log_turn(player: Dictionary, bust: bool) -> void:
+	var darts_str := "—"
+	if not _darts.is_empty():
+		var labels: Array[String] = []
+		for d in _darts:
+			labels.append(d["label"])
+		darts_str = " ".join(labels)
+
+	var result_str: String
+	if bust:
+		result_str = "💥 Bust"
+	else:
+		match GameData.game_mode:
+			GameData.GameMode.MODE_301, GameData.GameMode.MODE_501:
+				result_str = "%d restant" % player["score"]
+			GameData.GameMode.CRICKET:
+				result_str = "%d pts" % player["cricket_score"]
+			GameData.GameMode.FREE_SCORE:
+				result_str = "%d pts" % player["free_score"]
+			_:
+				result_str = ""
+
+	var entry := "M%d · %s : %s → %s" % [GameData.round_number, player["name"], darts_str, result_str]
+	_add_history_entry(entry)
+
+## Insère `entry` en tête du journal (le plus récent en haut) et borne sa
+## taille pour ne pas accumuler indéfiniment de nœuds à l'écran.
+func _add_history_entry(entry: String) -> void:
+	_turn_log.push_front(entry)
+	if _turn_log.size() > MAX_HISTORY_ENTRIES:
+		_turn_log.resize(MAX_HISTORY_ENTRIES)
+	_refresh_history_panel()
+
+## Reconstruit entièrement la liste affichée (même logique "brutale" que
+## ScorePanel.refresh : plus simple à maintenir qu'une mise à jour incrémentale).
+func _refresh_history_panel() -> void:
+	for child in history_list.get_children():
+		child.queue_free()
+
+	for entry in _turn_log:
+		var lbl := Label.new()
+		lbl.text                  = entry
+		lbl.theme_type_variation  = &"MutedLabel"
+		lbl.autowrap_mode         = TextServer.AUTOWRAP_WORD_SMART
+		history_list.add_child(lbl)
 
 ## Affiche un message temporaire (ex: "Hors jeu") puis revient à
 ## l'affichage normal du bust après 1.2 seconde.

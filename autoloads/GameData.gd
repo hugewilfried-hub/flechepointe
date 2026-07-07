@@ -20,6 +20,12 @@ const CRICKET_NUMBERS: Array[int] = [15, 16, 17, 18, 19, 20, 25]
 var game_mode: GameMode = GameMode.MODE_501
 var player_names: Array[String] = []
 
+# Règle "sortie double" (301/501 uniquement) : si activée, un joueur ne
+# peut gagner qu'en terminant exactement sur un double (D1..D20 ou Bull
+# double = 50). Réglée depuis MainMenu, non réinitialisée par setup_game()
+# pour qu'elle survive à un "Rejouer" (comme game_mode/player_names).
+var double_out: bool = false
+
 # ── État en cours ────────────────────────────
 var players: Array[Dictionary] = []
 var current_player_index: int  = 0

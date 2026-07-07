@@ -14,6 +14,8 @@ const GAME_SCENE := "res://scenes/Game.tscn"
 @onready var btn_501:           Button        = $VBoxContainer/mode_box/btn_501
 @onready var btn_cricket:       Button        = $VBoxContainer/mode_box/bnt_cricket
 @onready var btn_free:          Button        = $VBoxContainer/mode_box/bnt_free
+@onready var double_out_row:    HFlowContainer = $VBoxContainer/double_out_row
+@onready var chk_double_out:    CheckButton   = $VBoxContainer/double_out_row/chk_double_out
 @onready var btn_minus:         Button        = $VBoxContainer/joueur_row/btn_minus
 @onready var btn_plus:          Button        = $VBoxContainer/joueur_row/btn_plus
 @onready var lbl_count:         Label         = $VBoxContainer/joueur_row/lbl_count
@@ -22,6 +24,7 @@ const GAME_SCENE := "res://scenes/Game.tscn"
 
 var _mode: GameData.GameMode = GameData.GameMode.MODE_501
 var _player_count: int = 2
+var _double_out: bool = false
 
 const MIN_PLAYERS := 2
 const MAX_PLAYERS := 8
@@ -36,12 +39,15 @@ func _ready() -> void:
 	btn_minus.pressed.connect(func(): _change_count(-1))
 	btn_plus.pressed.connect(func():  _change_count(+1))
 	btn_start.pressed.connect(_on_start)
+	chk_double_out.toggled.connect(_on_double_out_toggled)
 
 	# Pré-remplir si on revient du WinScreen (rejouer)
 	if GameData.player_names.size() >= 2:
 		_player_count = GameData.player_names.size()
 		_mode         = GameData.game_mode
+		_double_out   = GameData.double_out
 
+	chk_double_out.button_pressed = _double_out
 	_rebuild_names()
 	_refresh_mode_buttons()
 	_refresh_count_label()
@@ -64,6 +70,9 @@ func _refresh_mode_buttons() -> void:
 		GameData.GameMode.CRICKET:      btn_cricket.theme_type_variation = &"SegButtonSelected"
 		GameData.GameMode.FREE_SCORE:   btn_free.theme_type_variation    = &"SegButtonSelected"
 
+	# La sortie double n'a de sens qu'en 301/501 (compte à rebours).
+	double_out_row.visible = (_mode == GameData.GameMode.MODE_301 or _mode == GameData.GameMode.MODE_501)
+
 # ─────────────────────────────────────────────
 #  Nombre de joueurs
 # ─────────────────────────────────────────────
@@ -74,6 +83,10 @@ func _change_count(delta: int) -> void:
 	print("[MainMenu] Nombre de joueurs -> %d" % _player_count)
 	_rebuild_names()
 	_refresh_count_label()
+
+func _on_double_out_toggled(pressed: bool) -> void:
+	print("[MainMenu] Sortie double -> %s" % pressed)
+	_double_out = pressed
 
 func _refresh_count_label() -> void:
 	lbl_count.text = str(_player_count)
@@ -124,6 +137,7 @@ func _on_start() -> void:
 		var n    := edit.text.strip_edges()
 		names.append(n if n != "" else "Joueur %d" % (i + 1))
 
-	print("[MainMenu] Démarrage de la partie : mode=%s, joueurs=%s" % [GameData.GameMode.keys()[_mode], names])
+	print("[MainMenu] Démarrage de la partie : mode=%s, joueurs=%s, sortie double=%s" % [GameData.GameMode.keys()[_mode], names, _double_out])
+	GameData.double_out = _double_out
 	GameData.setup_game(_mode, names)
 	get_tree().change_scene_to_file(GAME_SCENE)
