@@ -33,6 +33,12 @@ theme_type_variation = &"MutedLabel"
 layout_mode = 2
 theme_type_variation = &"AccentLabel"
 
+[node name="lbl_double_out" type="Label" parent="VBoxContainer/top_bar"]
+visible = false
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "🎯 Sortie double"
+
 [node name="btn_menu" type="Button" parent="VBoxContainer/top_bar" unique_id=1158849970]
 layout_mode = 2
 text = "☰"
@@ -94,3 +100,15 @@ text = "✕ Raté"
 layout_mode = 2
 theme_type_variation = &"AccentButton"
 text = "Tour suivant →"
+
+[node name="history_panel" type="PanelContainer" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 90)
+layout_mode = 2
+
+[node name="history_scroll" type="ScrollContainer" parent="VBoxContainer/history_panel"]
+layout_mode = 2
+follow_focus = true
+
+[node name="history_list" type="VBoxContainer" parent="VBoxContainer/history_panel/history_scroll"]
+layout_mode = 2
+size_flags_horizontal = 3

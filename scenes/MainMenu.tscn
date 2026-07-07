@@ -56,6 +56,18 @@ layout_mode = 2
 theme_type_variation = &"SegButton"
 text = "Score Libre"
 
+[node name="double_out_row" type="HFlowContainer" parent="VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="VBoxContainer/double_out_row"]
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Sortie double : "
+
+[node name="chk_double_out" type="CheckButton" parent="VBoxContainer/double_out_row"]
+layout_mode = 2
+
 [node name="joueur_row" type="HFlowContainer" parent="VBoxContainer"]
 layout_mode = 2
 alignment = 1
