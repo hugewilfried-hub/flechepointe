@@ -46,3 +46,7 @@ text = "Nouvelle partie "
 layout_mode = 2
 theme_type_variation = &"AccentButton"
 text = "Rejouer (même joueurs) "
+
+[node name="safe_area_spacer" type="Control" parent="VBoxContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 16)

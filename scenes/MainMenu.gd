@@ -21,6 +21,7 @@ const GAME_SCENE := "res://scenes/Game.tscn"
 @onready var lbl_count:         Label         = $VBoxContainer/joueur_row/lbl_count
 @onready var names_container:   VBoxContainer = $VBoxContainer/VBoxContainer
 @onready var btn_start:         Button        = $VBoxContainer/btn_start
+@onready var safe_area_spacer:  Control       = $VBoxContainer/safe_area_spacer
 
 var _mode: GameData.GameMode = GameData.GameMode.MODE_501
 var _player_count: int = 2
@@ -31,6 +32,10 @@ const MAX_PLAYERS := 8
 
 # ─────────────────────────────────────────────
 func _ready() -> void:
+	# Réserve de l'espace en bas pour ne pas être recouvert par la barre
+	# de navigation/gestes du téléphone (voir SafeArea.gd).
+	safe_area_spacer.custom_minimum_size.y = SafeArea.bottom_inset()
+
 	btn_301.pressed.connect(func(): _set_mode(GameData.GameMode.MODE_301))
 	btn_501.pressed.connect(func(): _set_mode(GameData.GameMode.MODE_501))
 	btn_cricket.pressed.connect(func(): _set_mode(GameData.GameMode.CRICKET))
