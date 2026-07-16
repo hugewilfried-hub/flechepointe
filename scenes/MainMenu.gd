@@ -28,6 +28,8 @@ const MAX_PLAYERS := 8
 
 # ─────────────────────────────────────────────
 func _ready() -> void:
+	SafeArea.apply_bottom_spacer($VBoxContainer)
+
 	btn_301.pressed.connect(func(): _set_mode(GameData.GameMode.MODE_301))
 	btn_501.pressed.connect(func(): _set_mode(GameData.GameMode.MODE_501))
 	btn_cricket.pressed.connect(func(): _set_mode(GameData.GameMode.CRICKET))

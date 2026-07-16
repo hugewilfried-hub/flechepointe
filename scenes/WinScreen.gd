@@ -20,6 +20,7 @@ const GAME_SCENE := "res://scenes/Game.tscn"
 # ─────────────────────────────────────────────
 func _ready() -> void:
 	print("[WinScreen] _ready() -> winner_index=%d" % GameData.winner_index)
+	SafeArea.apply_bottom_spacer($VBoxContainer)
 	btn_menu.pressed.connect(func():  get_tree().change_scene_to_file(MENU_SCENE))
 	btn_replay.pressed.connect(_on_replay)
 

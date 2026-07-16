@@ -51,6 +51,8 @@ func _ready() -> void:
 		GameData.get_current_player()["name"]
 	])
 
+	SafeArea.apply_bottom_spacer($VBoxContainer)
+
 	btn_end_free = get_node_or_null("VBoxContainer/throw_panel/HFlowContainer/btn_end_free")
 
 	dartboard.dart_thrown.connect(_on_dart_thrown, CONNECT_REFERENCE_COUNTED)
