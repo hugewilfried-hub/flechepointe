@@ -35,6 +35,7 @@ const MENU_SCENE := "res://scenes/MainMenu.tscn"
 @onready var btn_miss:    Button        = $VBoxContainer/throw_panel/HFlowContainer/btn_miss
 @onready var btn_next:    Button        = $VBoxContainer/throw_panel/HFlowContainer/btn_next
 @onready var history_list: VBoxContainer = $VBoxContainer/history_panel/history_scroll/history_list
+@onready var safe_area_spacer: Control   = $VBoxContainer/safe_area_spacer
 #@onready var btn_end_free: Button       = $VBox/ThrowPanel/BtnRow/btn_End_Free
 var btn_end_free: Button = null
 
@@ -58,6 +59,10 @@ func _ready() -> void:
 		GameData.GameMode.keys()[GameData.game_mode],
 		GameData.get_current_player()["name"]
 	])
+
+	# Réserve de l'espace en bas pour ne pas être recouvert par la barre
+	# de navigation/gestes du téléphone (voir SafeArea.gd).
+	safe_area_spacer.custom_minimum_size.y = SafeArea.bottom_inset()
 
 	btn_end_free = get_node_or_null("VBoxContainer/throw_panel/HFlowContainer/btn_end_free")
 

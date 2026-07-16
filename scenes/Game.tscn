@@ -112,3 +112,7 @@ follow_focus = true
 [node name="history_list" type="VBoxContainer" parent="VBoxContainer/history_panel/history_scroll"]
 layout_mode = 2
 size_flags_horizontal = 3
+
+[node name="safe_area_spacer" type="Control" parent="VBoxContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 16)

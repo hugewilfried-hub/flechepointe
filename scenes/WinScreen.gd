@@ -16,10 +16,16 @@ const GAME_SCENE := "res://scenes/Game.tscn"
 @onready var scores_container: VBoxContainer = $VBoxContainer/scores_container
 @onready var btn_menu:         Button        = $VBoxContainer/HFlowContainer/btn_menu
 @onready var btn_replay:       Button        = $VBoxContainer/HFlowContainer/btn_replay
+@onready var safe_area_spacer: Control       = $VBoxContainer/safe_area_spacer
 
 # ─────────────────────────────────────────────
 func _ready() -> void:
 	print("[WinScreen] _ready() -> winner_index=%d" % GameData.winner_index)
+
+	# Réserve de l'espace en bas pour ne pas être recouvert par la barre
+	# de navigation/gestes du téléphone (voir SafeArea.gd).
+	safe_area_spacer.custom_minimum_size.y = SafeArea.bottom_inset()
+
 	btn_menu.pressed.connect(func():  get_tree().change_scene_to_file(MENU_SCENE))
 	btn_replay.pressed.connect(_on_replay)
 
