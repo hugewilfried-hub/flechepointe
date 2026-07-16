@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://djuivygn6ct5g"]
+
+[ext_resource type="Script" uid="uid://bekym7gkfg5tx" path="res://components/DartboardInput.gd" id="1_2vgu6"]
+
+[node name="DartboardInput" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_2vgu6")

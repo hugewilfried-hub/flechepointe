@@ -1,0 +1,90 @@
+[gd_scene load_steps=2 format=3 uid="uid://dgpdewe024soj"]
+
+[ext_resource type="Script" uid="uid://c10ktuornp5sv" path="res://scenes/MainMenu.gd" id="1_yqorp"]
+
+[node name="MainMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_yqorp")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+
+[node name="titre" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+theme_type_variation = &"TitleLabel"
+horizontal_alignment = 1
+text = "🎯 FLÉCHETTES 🎯 "
+
+[node name="label mode de jeu" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+horizontal_alignment = 1
+text = "Mode de Jeu "
+
+[node name="mode_box" type="HFlowContainer" parent="VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="btn_301" type="Button" parent="VBoxContainer/mode_box"]
+layout_mode = 2
+theme_type_variation = &"SegButton"
+text = "301"
+
+[node name="btn_501" type="Button" parent="VBoxContainer/mode_box"]
+layout_mode = 2
+theme_type_variation = &"SegButton"
+text = "501"
+
+[node name="bnt_cricket" type="Button" parent="VBoxContainer/mode_box"]
+layout_mode = 2
+theme_type_variation = &"SegButton"
+text = "Cricket"
+
+[node name="bnt_free" type="Button" parent="VBoxContainer/mode_box"]
+layout_mode = 2
+theme_type_variation = &"SegButton"
+text = "Score Libre"
+
+[node name="joueur_row" type="HFlowContainer" parent="VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="VBoxContainer/joueur_row"]
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Joueur : "
+
+[node name="btn_minus" type="Button" parent="VBoxContainer/joueur_row"]
+layout_mode = 2
+text = "- "
+
+[node name="lbl_count" type="Label" parent="VBoxContainer/joueur_row"]
+layout_mode = 2
+text = "2"
+
+[node name="btn_plus" type="Button" parent="VBoxContainer/joueur_row"]
+layout_mode = 2
+text = "+"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="LineEdit" type="LineEdit" parent="VBoxContainer/VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="btn_start" type="Button" parent="VBoxContainer"]
+layout_mode = 2
+theme_type_variation = &"PrimaryButton"
+text = "▶  Commencer"
