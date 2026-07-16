@@ -460,21 +460,12 @@ func _log_turn(player: Dictionary, bust: bool) -> void:
 			labels.append(d["label"])
 		darts_str = " ".join(labels)
 
-	var result_str: String
+	# On n'affiche plus le score résultant ici : il est déjà visible en
+	# direct dans le panneau de score au-dessus. Seul le bust est gardé,
+	# car il n'est visible que brièvement pendant le tour concerné.
+	var entry := "Manche %d · %s : %s" % [GameData.round_number, player["name"], darts_str]
 	if bust:
-		result_str = "💥 Bust"
-	else:
-		match GameData.game_mode:
-			GameData.GameMode.MODE_301, GameData.GameMode.MODE_501:
-				result_str = "%d restant" % player["score"]
-			GameData.GameMode.CRICKET:
-				result_str = "%d pts" % player["cricket_score"]
-			GameData.GameMode.FREE_SCORE:
-				result_str = "%d pts" % player["free_score"]
-			_:
-				result_str = ""
-
-	var entry := "M%d · %s : %s → %s" % [GameData.round_number, player["name"], darts_str, result_str]
+		entry += "  💥 Bust"
 	_add_history_entry(entry)
 
 ## Insère `entry` en tête du journal (le plus récent en haut) et borne sa
