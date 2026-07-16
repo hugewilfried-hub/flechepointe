@@ -77,6 +77,12 @@ theme_type_variation = &"ScoreLabel"
 theme_override_font_sizes/font_size = 18
 text = "= 0"
 
+[node name="lbl_checkout" type="Label" parent="VBoxContainer/throw_panel"]
+visible = false
+layout_mode = 2
+theme_type_variation = &"AccentLabel"
+horizontal_alignment = 1
+
 [node name="lbl_bust" type="Label" parent="VBoxContainer/throw_panel" unique_id=574299751]
 visible = false
 layout_mode = 2

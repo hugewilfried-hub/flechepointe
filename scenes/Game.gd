@@ -30,6 +30,7 @@ const MENU_SCENE := "res://scenes/MainMenu.tscn"
 @onready var dart2:       Label         = $VBoxContainer/throw_panel/dart_row/dart2
 @onready var dart3:       Label         = $VBoxContainer/throw_panel/dart_row/dart3
 @onready var lbl_total:   Label         = $VBoxContainer/throw_panel/dart_row/lbl_total
+@onready var lbl_checkout: Label        = $VBoxContainer/throw_panel/lbl_checkout
 @onready var lbl_bust:    Label         = $VBoxContainer/throw_panel/lbl_bust
 @onready var btn_undo:    Button        = $VBoxContainer/throw_panel/HFlowContainer/btn_undo
 @onready var btn_miss:    Button        = $VBoxContainer/throw_panel/HFlowContainer/btn_miss
@@ -53,6 +54,11 @@ var _bust: bool = false
 const MAX_HISTORY_ENTRIES := 50
 var _turn_log: Array[String] = []
 
+# Table des fléchettes possibles (valeur, libellé, double ou non), triée
+# par valeur décroissante. Sert à calculer la suggestion de finish
+# affichée dans lbl_checkout (voir _find_checkout).
+var _dart_values: Array = []
+
 func _ready() -> void:
 	print("[Game] _ready() -> mode=%s, joueur courant=%s" % [
 		GameData.GameMode.keys()[GameData.game_mode],
@@ -60,6 +66,8 @@ func _ready() -> void:
 	])
 
 	SafeArea.apply_bottom_spacer($VBoxContainer)
+
+	_dart_values = _build_dart_values()
 
 	btn_end_free = get_node_or_null("VBoxContainer/throw_panel/HFlowContainer/btn_end_free")
 
@@ -349,6 +357,80 @@ func _refresh_throw_panel() -> void:
 		btn_next.disabled = _darts.is_empty()
 
 	_refresh_score_panel()
+	_refresh_checkout_hint()
+
+## Construit la liste de toutes les fléchettes possibles (simples 1-20,
+## doubles 2-40, triples 3-60, bull 25, bull double 50) triée par valeur
+## décroissante, pour que la recherche de finish préfère les gros scores.
+func _build_dart_values() -> Array:
+	var values: Array = []
+	for n in range(1, 21):
+		values.append({"value": n,     "label": str(n),      "is_double": false})
+		values.append({"value": n * 2, "label": "D%d" % n,   "is_double": true})
+		values.append({"value": n * 3, "label": "T%d" % n,   "is_double": false})
+	values.append({"value": 25, "label": "25",   "is_double": false})
+	values.append({"value": 50, "label": "Bull", "is_double": true})
+	values.sort_custom(func(a, b): return a["value"] > b["value"])
+	return values
+
+## Cherche une suggestion de finish pour `target` points avec au plus
+## `max_darts` fléchettes. Essaie d'abord le nombre de fléchettes le plus
+## court (inutile de suggérer 3 fléchettes si 1 seule suffit). Renvoie
+## un Array de libellés (ex: ["T20", "T20", "Bull"]) ou null si aucune
+## combinaison valide n'existe (ex: 169, 168... avec sortie double).
+func _find_checkout(target: int, max_darts: int, require_double: bool) -> Variant:
+	if target <= 0 or max_darts <= 0:
+		return null
+	for n in range(1, max_darts + 1):
+		var combo: Variant = _try_checkout(target, n, require_double)
+		if combo != null:
+			return combo
+	return null
+
+func _try_checkout(target: int, darts: int, require_double: bool) -> Variant:
+	if darts == 1:
+		for dv in _dart_values:
+			if dv["value"] == target and (not require_double or dv["is_double"]):
+				return [dv["label"]]
+		return null
+
+	for dv in _dart_values:
+		var v: int = dv["value"]
+		if v >= target:
+			continue
+		var rest: Variant = _try_checkout(target - v, darts - 1, require_double)
+		if rest != null:
+			var combo: Array = [dv["label"]]
+			combo.append_array(rest)
+			return combo
+	return null
+
+## Met à jour la suggestion de finish affichée sous les fléchettes
+## lancées. Ne s'applique qu'en 301/501, quand le tour n'est pas déjà
+## "bust" et qu'il reste au moins une fléchette à lancer ce tour.
+func _refresh_checkout_hint() -> void:
+	var applicable := (
+		GameData.game_mode in [GameData.GameMode.MODE_301, GameData.GameMode.MODE_501]
+		and not _bust
+	)
+	if not applicable:
+		lbl_checkout.visible = false
+		return
+
+	var darts_left := 3 - _darts.size()
+	var remaining: int = GameData.get_current_player()["score"] - _turn_total()
+
+	if remaining <= 0 or darts_left <= 0:
+		lbl_checkout.visible = false
+		return
+
+	var combo: Variant = _find_checkout(remaining, darts_left, GameData.double_out)
+	if combo == null:
+		lbl_checkout.visible = false
+		return
+
+	lbl_checkout.text    = "🎯 Finish : %s" % " ".join(combo)
+	lbl_checkout.visible = true
 
 ## Transmet l'état courant au ScorePanel (composant réutilisable qui sait
 ## se dessiner différemment selon le mode). `pending` = le total du tour
