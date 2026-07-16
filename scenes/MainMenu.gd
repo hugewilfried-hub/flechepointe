@@ -50,6 +50,7 @@ func _ready() -> void:
 		_double_out   = GameData.double_out
 
 	chk_double_out.button_pressed = _double_out
+	_refresh_double_out_style()
 	_rebuild_names()
 	_refresh_mode_buttons()
 	_refresh_count_label()
@@ -89,6 +90,16 @@ func _change_count(delta: int) -> void:
 func _on_double_out_toggled(pressed: bool) -> void:
 	print("[MainMenu] Sortie double -> %s" % pressed)
 	_double_out = pressed
+	_refresh_double_out_style()
+
+## Switch basique : teinte le CheckButton natif en vert quand activé,
+## en rouge quand désactivé. Le fond (StyleBox) est rendu transparent
+## pour éviter le carré coloré autour de l'icône.
+func _refresh_double_out_style() -> void:
+	var empty_style := StyleBoxEmpty.new()
+	for state in ["normal", "hover", "pressed", "hover_pressed", "focus"]:
+		chk_double_out.add_theme_stylebox_override(state, empty_style)
+	chk_double_out.modulate = Color(0.35, 0.85, 0.45) if _double_out else Color(0.9, 0.35, 0.35)
 
 func _refresh_count_label() -> void:
 	lbl_count.text = str(_player_count)
