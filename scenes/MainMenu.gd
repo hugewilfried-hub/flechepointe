@@ -15,7 +15,7 @@ const GAME_SCENE := "res://scenes/Game.tscn"
 @onready var btn_cricket:       Button        = $VBoxContainer/mode_box/bnt_cricket
 @onready var btn_free:          Button        = $VBoxContainer/mode_box/bnt_free
 @onready var double_out_row:    HFlowContainer = $VBoxContainer/double_out_row
-@onready var chk_double_out:    CheckButton   = $VBoxContainer/double_out_row/chk_double_out
+@onready var chk_double_out:    Button        = $VBoxContainer/double_out_row/chk_double_out
 @onready var btn_minus:         Button        = $VBoxContainer/joueur_row/btn_minus
 @onready var btn_plus:          Button        = $VBoxContainer/joueur_row/btn_plus
 @onready var lbl_count:         Label         = $VBoxContainer/joueur_row/lbl_count
@@ -25,6 +25,7 @@ const GAME_SCENE := "res://scenes/Game.tscn"
 var _mode: GameData.GameMode = GameData.GameMode.MODE_501
 var _player_count: int = 2
 var _double_out: bool = false
+var _switch_knob: ImageTexture
 
 const MIN_PLAYERS := 2
 const MAX_PLAYERS := 8
@@ -92,14 +93,41 @@ func _on_double_out_toggled(pressed: bool) -> void:
 	_double_out = pressed
 	_refresh_double_out_style()
 
-## Switch basique : teinte le CheckButton natif en vert quand activé,
-## en rouge quand désactivé. Le fond (StyleBox) est rendu transparent
-## pour éviter le carré coloré autour de l'icône.
+## Switch dessiné à la main (piste colorée + curseur) plutôt que de
+## s'appuyer sur les icônes natives "on"/"off" d'un CheckButton : sur ce
+## contrôle, les surcharges de thème par instance (icône ET stylebox liés
+## à l'état coché) sont ignorées par le moteur au rendu — testé avec une
+## icône identique forcée sur les deux états, toujours rendue différemment.
+## `chk_double_out` est donc un Button en toggle_mode : sa piste (StyleBox)
+## et son curseur (icône simple, sans dualité on/off) sont 100% sous notre
+## contrôle, ce qui garantit un rendu strictement symétrique entre les
+## deux états, seule la couleur de piste changeant (vert/rouge).
 func _refresh_double_out_style() -> void:
-	var empty_style := StyleBoxEmpty.new()
-	for state in ["normal", "hover", "pressed", "hover_pressed", "focus"]:
-		chk_double_out.add_theme_stylebox_override(state, empty_style)
-	chk_double_out.modulate = Color(0.35, 0.85, 0.45) if _double_out else Color(0.9, 0.35, 0.35)
+	var track := StyleBoxFlat.new()
+	track.bg_color = Color(0.35, 0.85, 0.45) if _double_out else Color(0.9, 0.35, 0.35)
+	track.set_corner_radius_all(12)
+	track.content_margin_left = 3
+	track.content_margin_right = 3
+	track.content_margin_top = 3
+	track.content_margin_bottom = 3
+	for state in ["normal", "hover", "pressed", "hover_pressed", "focus", "disabled"]:
+		chk_double_out.add_theme_stylebox_override(state, track)
+	if _switch_knob == null:
+		_switch_knob = _build_switch_knob()
+	chk_double_out.icon = _switch_knob
+	chk_double_out.expand_icon = false
+	chk_double_out.icon_alignment = HORIZONTAL_ALIGNMENT_RIGHT if _double_out else HORIZONTAL_ALIGNMENT_LEFT
+
+## Génère le curseur (petit disque blanc) du switch.
+func _build_switch_knob(diameter: int = 18) -> ImageTexture:
+	var image := Image.create(diameter, diameter, false, Image.FORMAT_RGBA8)
+	var radius := diameter / 2.0
+	var center := Vector2(radius, radius)
+	for y in diameter:
+		for x in diameter:
+			var dist := Vector2(x + 0.5, y + 0.5).distance_to(center)
+			image.set_pixel(x, y, Color(1, 1, 1, 1) if dist <= radius else Color(0, 0, 0, 0))
+	return ImageTexture.create_from_image(image)
 
 func _refresh_count_label() -> void:
 	lbl_count.text = str(_player_count)
