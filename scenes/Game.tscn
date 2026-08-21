@@ -21,19 +21,23 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="top_bar" type="HFlowContainer" parent="VBoxContainer" unique_id=364492559]
+[node name="top_bar" type="HBoxContainer" parent="VBoxContainer" unique_id=364492559]
 layout_mode = 2
+
+[node name="info_box" type="HFlowContainer" parent="VBoxContainer/top_bar"]
+layout_mode = 2
+size_flags_horizontal = 3
 alignment = 1
 
-[node name="lbl_round" type="Label" parent="VBoxContainer/top_bar" unique_id=833425799]
+[node name="lbl_round" type="Label" parent="VBoxContainer/top_bar/info_box" unique_id=833425799]
 layout_mode = 2
 theme_type_variation = &"MutedLabel"
 
-[node name="lbl_current_player" type="Label" parent="VBoxContainer/top_bar" unique_id=531711820]
+[node name="lbl_current_player" type="Label" parent="VBoxContainer/top_bar/info_box" unique_id=531711820]
 layout_mode = 2
 theme_type_variation = &"AccentLabel"
 
-[node name="lbl_double_out" type="Label" parent="VBoxContainer/top_bar"]
+[node name="lbl_double_out" type="Label" parent="VBoxContainer/top_bar/info_box"]
 visible = false
 layout_mode = 2
 theme_type_variation = &"MutedLabel"

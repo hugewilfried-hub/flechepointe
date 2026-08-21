@@ -20,9 +20,9 @@ extends Control
 const WIN_SCENE  := "res://scenes/WinScreen.tscn"
 const MENU_SCENE := "res://scenes/MainMenu.tscn"
 
-@onready var lbl_round:   Label         = $VBoxContainer/top_bar/lbl_round
-@onready var lbl_player:  Label         = $VBoxContainer/top_bar/lbl_current_player
-@onready var lbl_double_out: Label      = $VBoxContainer/top_bar/lbl_double_out
+@onready var lbl_round:   Label         = $VBoxContainer/top_bar/info_box/lbl_round
+@onready var lbl_player:  Label         = $VBoxContainer/top_bar/info_box/lbl_current_player
+@onready var lbl_double_out: Label      = $VBoxContainer/top_bar/info_box/lbl_double_out
 @onready var btn_menu:    Button        = $VBoxContainer/top_bar/btn_menu
 @onready var score_panel                = $VBoxContainer/score_panel/HBoxContainer
 @onready var dartboard:   Control       = $VBoxContainer/dartboard

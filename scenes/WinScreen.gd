@@ -16,12 +16,14 @@ const GAME_SCENE := "res://scenes/Game.tscn"
 @onready var scores_container: VBoxContainer = $VBoxContainer/scores_container
 @onready var btn_menu:         Button        = $VBoxContainer/HFlowContainer/btn_menu
 @onready var btn_replay:       Button        = $VBoxContainer/HFlowContainer/btn_replay
+@onready var btn_burger:       Button        = $btn_burger
 
 # ─────────────────────────────────────────────
 func _ready() -> void:
 	print("[WinScreen] _ready() -> winner_index=%d" % GameData.winner_index)
 	SafeArea.apply_bottom_spacer($VBoxContainer)
 	btn_menu.pressed.connect(func():  get_tree().change_scene_to_file(MENU_SCENE))
+	btn_burger.pressed.connect(func(): get_tree().change_scene_to_file(MENU_SCENE))
 	btn_replay.pressed.connect(_on_replay)
 
 	_display_results()
