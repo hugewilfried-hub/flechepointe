@@ -47,6 +47,13 @@ text = "🎯 Sortie double"
 layout_mode = 2
 text = "☰"
 
+[node name="menu_popup" type="PopupMenu" parent="VBoxContainer/top_bar/btn_menu"]
+item_count = 2
+item_0/text = "💾 Sauvegarder et quitter"
+item_0/id = 0
+item_1/text = "🚪 Quitter sans sauvegarder"
+item_1/id = 1
+
 [node name="score_panel" parent="VBoxContainer" unique_id=1632028249 instance=ExtResource("2_78awf")]
 custom_minimum_size = Vector2(0, 170)
 layout_mode = 2

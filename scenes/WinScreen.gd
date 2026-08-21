@@ -26,6 +26,13 @@ func _ready() -> void:
 	btn_burger.pressed.connect(func(): get_tree().change_scene_to_file(MENU_SCENE))
 	btn_replay.pressed.connect(_on_replay)
 
+	# La partie est terminée : si elle avait été sauvegardée (reprise
+	# depuis le menu), on supprime cette sauvegarde pour qu'elle ne
+	# traîne plus dans la liste des parties à reprendre.
+	if GameData.current_save_id != "":
+		SaveManager.delete_save(GameData.current_save_id)
+		GameData.current_save_id = ""
+
 	_display_results()
 
 # ─────────────────────────────────────────────

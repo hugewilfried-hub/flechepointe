@@ -33,6 +33,19 @@ var round_number: int          = 1
 var game_over: bool            = false
 var winner_index: int          = -1
 
+# Identifiant de la sauvegarde (SaveManager) dont cette partie a été
+# chargée, ou "" pour une partie neuve jamais sauvegardée. Permet de
+# ré-écraser le même fichier plutôt que d'en créer un nouveau à chaque
+# sauvegarde, et de savoir quel fichier supprimer une fois la partie finie.
+var current_save_id: String    = ""
+
+# Fléchettes du tour en cours au moment d'une sauvegarde ("Sauvegarder
+# et quitter" en pleine volée, avant "Tour suivant") : Game.gd les
+# remet dans ses variables locales _darts/_bust à la reprise, puis les
+# vide aussitôt pour ne pas polluer un tour normal ultérieur.
+var pending_darts: Array = []
+var pending_bust: bool   = false
+
 # ─────────────────────────────────────────────
 #  Initialisation d'une partie
 # ─────────────────────────────────────────────
@@ -49,6 +62,9 @@ func setup_game(mode: GameMode, names: Array[String]) -> void:
 	round_number          = 1
 	game_over             = false
 	winner_index          = -1
+	current_save_id       = ""
+	pending_darts         = []
+	pending_bust          = false
 	players.clear()
 
 	# Le score de départ ne sert qu'aux modes 301/501 (compte à rebours).

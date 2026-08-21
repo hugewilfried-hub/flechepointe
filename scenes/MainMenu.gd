@@ -10,6 +10,9 @@ extends Control
 
 const GAME_SCENE := "res://scenes/Game.tscn"
 
+@onready var load_confirm:      ConfirmationDialog = $load_confirm
+@onready var saves_panel:       PanelContainer = $VBoxContainer/saves_panel
+@onready var saves_list:        VBoxContainer = $VBoxContainer/saves_panel/saves_col/saves_scroll/saves_list
 @onready var btn_301:           Button        = $VBoxContainer/mode_box/btn_301
 @onready var btn_501:           Button        = $VBoxContainer/mode_box/btn_501
 @onready var btn_cricket:       Button        = $VBoxContainer/mode_box/bnt_cricket
@@ -26,12 +29,20 @@ var _mode: GameData.GameMode = GameData.GameMode.MODE_501
 var _player_count: int = 2
 var _double_out: bool = false
 
+# Id de la sauvegarde en attente de confirmation dans load_confirm
+# (vide tant qu'aucune demande de chargement n'est en cours).
+var _pending_load_id: String = ""
+
 const MIN_PLAYERS := 2
 const MAX_PLAYERS := 8
 
 # ─────────────────────────────────────────────
 func _ready() -> void:
 	SafeArea.apply_bottom_spacer($VBoxContainer)
+
+	load_confirm.get_ok_button().text     = "Charger"
+	load_confirm.get_cancel_button().text = "Annuler"
+	load_confirm.confirmed.connect(_on_load_confirmed)
 
 	btn_301.pressed.connect(func(): _set_mode(GameData.GameMode.MODE_301))
 	btn_501.pressed.connect(func(): _set_mode(GameData.GameMode.MODE_501))
@@ -54,6 +65,91 @@ func _ready() -> void:
 	_rebuild_names()
 	_refresh_mode_buttons()
 	_refresh_count_label()
+	_refresh_saves_list()
+
+# ─────────────────────────────────────────────
+#  Parties sauvegardées
+# ─────────────────────────────────────────────
+## Reconstruit la liste des parties reprenables (masquée s'il n'y en a
+## aucune). Appelée à l'arrivée sur le menu, et après une suppression.
+func _refresh_saves_list() -> void:
+	for child in saves_list.get_children():
+		child.queue_free()
+
+	var saves: Array = SaveManager.list_saves()
+	saves_panel.visible = not saves.is_empty()
+
+	for save in saves:
+		var id: String = save["id"]
+		var row := HBoxContainer.new()
+
+		var btn_load := Button.new()
+		btn_load.text = save["label"]
+		btn_load.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		btn_load.pressed.connect(func(): _on_request_load(id))
+		row.add_child(btn_load)
+
+		var btn_delete := Button.new()
+		btn_delete.text = "🗑"
+		btn_delete.pressed.connect(func(): _on_delete_save(id))
+		row.add_child(btn_delete)
+
+		saves_list.add_child(row)
+
+## Ouvre la boîte de dialogue de récapitulatif pour la sauvegarde `id` :
+## le chargement effectif n'a lieu que si le joueur confirme (voir
+## _on_load_confirmed), "Annuler" revient simplement au menu tel quel.
+func _on_request_load(id: String) -> void:
+	var data: Variant = SaveManager.read_save(id)
+	if data == null:
+		return
+	_pending_load_id      = id
+	load_confirm.dialog_text = _build_save_summary(data)
+	load_confirm.popup_centered()
+
+## Construit le texte récapitulatif : mode, manche, et le point de
+## chaque joueur (formaté comme sur ScorePanel/WinScreen selon le mode).
+func _build_save_summary(data: Dictionary) -> String:
+	var mode_names := {
+		GameData.GameMode.MODE_301:   "301",
+		GameData.GameMode.MODE_501:   "501",
+		GameData.GameMode.CRICKET:    "Cricket",
+		GameData.GameMode.FREE_SCORE: "Score libre",
+	}
+	var mode: int = int(data.get("game_mode", GameData.GameMode.MODE_501))
+
+	var lines: Array[String] = []
+	lines.append("%s — Manche %d" % [mode_names.get(mode, "?"), int(data.get("round_number", 1))])
+	lines.append("")
+
+	for raw_p in data.get("players", []) as Array:
+		var p: Dictionary = raw_p
+		var score_text: String
+		match mode:
+			GameData.GameMode.MODE_301, GameData.GameMode.MODE_501:
+				score_text = "%d restant" % int(p.get("score", 0))
+			GameData.GameMode.CRICKET:
+				score_text = "%d pts" % int(p.get("cricket_score", 0))
+			GameData.GameMode.FREE_SCORE:
+				score_text = "%d pts" % int(p.get("free_score", 0))
+			_:
+				score_text = ""
+		lines.append("%s : %s" % [p.get("name", "?"), score_text])
+
+	return "\n".join(lines)
+
+## Chargement confirmé (bouton "Charger" de load_confirm) : bascule
+## directement sur l'écran de jeu (contourne _on_start, la partie n'est
+## pas "neuve", pas besoin de repasser par la config mode/joueurs).
+func _on_load_confirmed() -> void:
+	print("[MainMenu] Chargement confirmé : %s" % _pending_load_id)
+	if SaveManager.load_game(_pending_load_id):
+		get_tree().change_scene_to_file(GAME_SCENE)
+
+func _on_delete_save(id: String) -> void:
+	print("[MainMenu] Suppression de la sauvegarde : %s" % id)
+	SaveManager.delete_save(id)
+	_refresh_saves_list()
 
 # ─────────────────────────────────────────────
 #  Mode de jeu

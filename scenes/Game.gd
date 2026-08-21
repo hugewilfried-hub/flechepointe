@@ -24,6 +24,7 @@ const MENU_SCENE := "res://scenes/MainMenu.tscn"
 @onready var lbl_player:  Label         = $VBoxContainer/top_bar/info_box/lbl_current_player
 @onready var lbl_double_out: Label      = $VBoxContainer/top_bar/info_box/lbl_double_out
 @onready var btn_menu:    Button        = $VBoxContainer/top_bar/btn_menu
+@onready var menu_popup:  PopupMenu     = $VBoxContainer/top_bar/btn_menu/menu_popup
 @onready var score_panel                = $VBoxContainer/score_panel/HBoxContainer
 @onready var dartboard:   Control       = $VBoxContainer/dartboard
 @onready var dart1:       Label         = $VBoxContainer/throw_panel/dart_row/dart1
@@ -76,7 +77,8 @@ func _ready() -> void:
 	btn_undo.pressed.connect(_on_undo)
 	btn_miss.pressed.connect(_on_miss)
 	btn_next.pressed.connect(_on_next_turn)
-	btn_menu.pressed.connect(func(): get_tree().change_scene_to_file(MENU_SCENE))
+	btn_menu.pressed.connect(_on_menu_pressed)
+	menu_popup.id_pressed.connect(_on_menu_popup_id_pressed)
 
 	# Le bouton "Terminer" (score libre) n'existe que pour ce mode, et
 	# uniquement s'il a été laissé dans la scène (sinon il reste null,
@@ -93,7 +95,37 @@ func _ready() -> void:
 	# Rappel visuel de la règle "sortie double" si elle est active (301/501 uniquement).
 	lbl_double_out.visible = GameData.double_out and GameData.game_mode in [GameData.GameMode.MODE_301, GameData.GameMode.MODE_501]
 
+	# Reprise d'une partie sauvegardée en pleine volée : on remet les
+	# fléchettes déjà lancées avant de rafraîchir l'affichage, puis on
+	# vide pending_darts pour ne pas les réappliquer à un tour normal.
+	if not GameData.pending_darts.is_empty():
+		_darts.clear()
+		for d in GameData.pending_darts:
+			_darts.append(d as Dictionary)
+		_bust = GameData.pending_bust
+		GameData.pending_darts = []
+		GameData.pending_bust  = false
+
 	_start_turn()
+
+## Ouvre le petit menu (Sauvegarder et quitter / Quitter sans sauvegarder)
+## juste sous le bouton ☰.
+func _on_menu_pressed() -> void:
+	var pos: Vector2 = btn_menu.global_position + Vector2(0, btn_menu.size.y)
+	menu_popup.popup(Rect2i(Vector2i(pos), Vector2i.ZERO))
+
+func _on_menu_popup_id_pressed(id: int) -> void:
+	match id:
+		0:  # 💾 Sauvegarder et quitter
+			print("[Game] Sauvegarde de la partie avant de quitter")
+			# Inclut les fléchettes déjà lancées ce tour-ci (pas encore
+			# validées par "Tour suivant") pour ne rien perdre à la reprise.
+			GameData.pending_darts = _darts.duplicate(true)
+			GameData.pending_bust  = _bust
+			SaveManager.save_game()
+			get_tree().change_scene_to_file(MENU_SCENE)
+		1:  # 🚪 Quitter sans sauvegarder
+			get_tree().change_scene_to_file(MENU_SCENE)
 
 # ─────────────────────────────────────────────
 #  Réception d'une fléchette (clic sur la cible)
