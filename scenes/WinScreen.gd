@@ -32,9 +32,15 @@ func _ready() -> void:
 ## à chaque appel plutôt que de les mettre à jour (plus simple, et ici
 ## appelé une seule fois de toute façon, à l'arrivée sur l'écran).
 func _display_results() -> void:
+	# Référence du Dictionary gagnant (pas juste son nom : deux joueurs
+	# peuvent avoir le même nom, voir is_winner plus bas). Vide si aucun
+	# gagnant désigné (winner_index invalide).
+	var winner: Dictionary = {}
+	if GameData.winner_index >= 0 and GameData.winner_index < GameData.players.size():
+		winner = GameData.players[GameData.winner_index]
+
 	# ── Titre gagnant ────────────────────────
-	if GameData.winner_index >= 0:
-		var winner := GameData.players[GameData.winner_index]
+	if not winner.is_empty():
 		lbl_winner.text = "🏆  %s gagne !" % winner["name"]
 		print("[WinScreen] Gagnant : %s" % winner["name"])
 	else:
@@ -59,7 +65,9 @@ func _display_results() -> void:
 
 	for i in sorted_players.size():
 		var p: Dictionary = sorted_players[i]
-		var is_winner: bool = (p["name"] == GameData.players[GameData.winner_index]["name"])
+		# Comparaison par référence (is_same), pas par nom : deux joueurs
+		# peuvent partager le même nom sans être la même personne.
+		var is_winner: bool = not winner.is_empty() and is_same(p, winner)
 
 		var card := PanelContainer.new()
 		card.theme_type_variation = &"ActivePanel" if is_winner else &"PanelContainer"
