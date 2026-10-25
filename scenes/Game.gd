@@ -69,6 +69,11 @@ func _ready() -> void:
 		GameData.get_current_player()["name"]
 	])
 
+	# Empêche l'écran de se verrouiller tout seul entre deux fléchettes
+	# pendant une partie. Désactivé dans _exit_tree() en quittant l'écran
+	# de jeu (menu, victoire) pour ne pas garder l'écran allumé inutilement.
+	DisplayServer.screen_set_keep_on(true)
+
 	SafeArea.apply_bottom_spacer($VBoxContainer)
 
 	_dart_values = _build_dart_values()
@@ -113,6 +118,9 @@ func _ready() -> void:
 	_apply_layout()
 
 	_start_turn()
+
+func _exit_tree() -> void:
+	DisplayServer.screen_set_keep_on(false)
 
 # ─────────────────────────────────────────────
 #  Mise en page adaptative (portrait téléphone / paysage grand écran)
