@@ -1,4 +1,4 @@
-extends HBoxContainer
+extends BoxContainer
 
 # ─────────────────────────────────────────────
 #  ScorePanel.gd
@@ -19,6 +19,12 @@ const MARK_ICONS := ["", "/", "✕", "●"]  # 0, 1, 2, 3 marques
 # ─────────────────────────────────────────────
 #  Point d'entrée public
 # ─────────────────────────────────────────────
+
+## Empile les cartes joueurs en colonne (écran paysage, colonne de
+## gauche) au lieu de les aligner en ligne (portrait). Un BoxContainer
+## bascule simplement de l'un à l'autre via sa propriété `vertical`.
+func set_stacked(on: bool) -> void:
+	vertical = on
 
 ## Rafraîchit l'affichage complet.
 ## pending_pts = total de la volée en cours (pour 301/501)

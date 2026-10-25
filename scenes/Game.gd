@@ -25,8 +25,11 @@ const MENU_SCENE := "res://scenes/MainMenu.tscn"
 @onready var lbl_double_out: Label      = $VBoxContainer/top_bar/info_box/lbl_double_out
 @onready var btn_menu:    Button        = $VBoxContainer/top_bar/btn_menu
 @onready var menu_popup:  PopupMenu     = $VBoxContainer/top_bar/btn_menu/menu_popup
+@onready var score_scroll: ScrollContainer = $VBoxContainer/score_panel
 @onready var score_panel                = $VBoxContainer/score_panel/HBoxContainer
 @onready var dartboard:   Control       = $VBoxContainer/dartboard
+@onready var throw_panel: VBoxContainer = $VBoxContainer/throw_panel
+@onready var history_panel: PanelContainer = $VBoxContainer/history_panel
 @onready var dart1:       Label         = $VBoxContainer/throw_panel/dart_row/dart1
 @onready var dart2:       Label         = $VBoxContainer/throw_panel/dart_row/dart2
 @onready var dart3:       Label         = $VBoxContainer/throw_panel/dart_row/dart3
@@ -106,12 +109,109 @@ func _ready() -> void:
 		GameData.pending_darts = []
 		GameData.pending_bust  = false
 
+	ScreenLayout.layout_changed.connect(_on_layout_changed)
+	_apply_layout()
+
 	_start_turn()
+
+# ─────────────────────────────────────────────
+#  Mise en page adaptative (portrait téléphone / paysage grand écran)
+# ─────────────────────────────────────────────
+## Corps en 3 colonnes (paysage) : scores+historique | cible | contrôles.
+## null en portrait, où tout est empilé dans $VBoxContainer.
+var _body: HBoxContainer = null
+
+func _on_layout_changed(_landscape: bool) -> void:
+	_apply_layout()
+
+func _apply_layout() -> void:
+	if ScreenLayout.is_landscape():
+		_enter_landscape()
+	else:
+		_leave_landscape()
+
+func _enter_landscape() -> void:
+	if _body != null:
+		return
+	var root: VBoxContainer = $VBoxContainer
+
+	_body = HBoxContainer.new()
+	_body.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	_body.add_theme_constant_override("separation", 16)
+
+	var left := VBoxContainer.new()
+	left.custom_minimum_size = Vector2(300, 0)
+	_body.add_child(left)
+
+	var right := VBoxContainer.new()
+	right.custom_minimum_size  = Vector2(320, 0)
+	right.alignment            = BoxContainer.ALIGNMENT_CENTER
+
+	root.add_child(_body)
+	root.move_child(_body, 1)  # juste sous top_bar
+
+	# Colonne de gauche : cartes joueurs (empilées) puis historique.
+	score_scroll.reparent(left, false)
+	score_scroll.custom_minimum_size = Vector2.ZERO
+	score_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	score_panel.set_stacked(true)
+	score_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	history_panel.reparent(left, false)
+	history_panel.custom_minimum_size = Vector2(0, 160)
+
+	# Gros écran tactile : boutons et chiffres plus grands.
+	for btn in [btn_undo, btn_miss, btn_next]:
+		btn.custom_minimum_size = Vector2(0, 56)
+	for lbl in [dart1, dart2, dart3, lbl_total]:
+		lbl.add_theme_font_size_override("font_size", 28)
+
+	# Centre : la cible, la plus grande possible.
+	dartboard.reparent(_body, false)
+	dartboard.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+	# Colonne de droite : fléchettes lancées + boutons.
+	_body.add_child(right)
+	throw_panel.reparent(right, false)
+
+func _leave_landscape() -> void:
+	if _body == null:
+		return
+	var root: VBoxContainer = $VBoxContainer
+
+	score_scroll.reparent(root, false)
+	root.move_child(score_scroll, 1)
+	score_scroll.custom_minimum_size = Vector2(0, 170)
+	score_scroll.size_flags_vertical = Control.SIZE_FILL
+	score_panel.set_stacked(false)
+	score_panel.size_flags_horizontal = Control.SIZE_FILL
+
+	for btn in [btn_undo, btn_miss, btn_next]:
+		btn.custom_minimum_size = Vector2.ZERO
+	for lbl in [dart1, dart2, dart3]:
+		lbl.remove_theme_font_size_override("font_size")
+	lbl_total.add_theme_font_size_override("font_size", 18)  # valeur d'origine de Game.tscn
+
+	dartboard.reparent(root, false)
+	root.move_child(dartboard, 2)
+	dartboard.size_flags_horizontal = Control.SIZE_FILL
+
+	throw_panel.reparent(root, false)
+	root.move_child(throw_panel, 3)
+
+	history_panel.reparent(root, false)
+	root.move_child(history_panel, 4)
+	history_panel.custom_minimum_size = Vector2(0, 90)
+
+	_body.queue_free()
+	_body = null
 
 ## Ouvre le petit menu (Sauvegarder et quitter / Quitter sans sauvegarder)
 ## juste sous le bouton ☰.
 func _on_menu_pressed() -> void:
-	var pos: Vector2 = btn_menu.global_position + Vector2(0, btn_menu.size.y)
+	# Coordonnées écran réelles (tient compte de la mise à l'échelle de la
+	# fenêtre, différente en portrait et en paysage).
+	var canvas_pos: Vector2 = btn_menu.get_global_transform_with_canvas().origin + Vector2(0, btn_menu.size.y)
+	var pos: Vector2 = get_viewport().get_screen_transform() * canvas_pos
 	menu_popup.popup(Rect2i(Vector2i(pos), Vector2i.ZERO))
 
 func _on_menu_popup_id_pressed(id: int) -> void:

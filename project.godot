@@ -24,6 +24,7 @@ config/icon="res://icon.svg"
 GameData="*res://autoloads/GameData.gd"
 SafeArea="*res://autoloads/SafeArea.gd"
 SaveManager="*res://autoloads/SaveManager.gd"
+ScreenLayout="*res://autoloads/ScreenLayout.gd"
 
 [display]
 
@@ -31,6 +32,7 @@ window/size/viewport_width=480
 window/size/viewport_height=960
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
+window/handheld/orientation=6
 
 [gui]
 

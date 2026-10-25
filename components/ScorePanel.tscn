@@ -4,7 +4,7 @@
 
 [node name="ScorePanel" type="ScrollContainer" unique_id=436887270]
 
-[node name="HBoxContainer" type="HBoxContainer" parent="." unique_id=321049213]
+[node name="HBoxContainer" type="BoxContainer" parent="." unique_id=321049213]
 layout_mode = 2
 alignment = 1
 script = ExtResource("1_7g5jr")

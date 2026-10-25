@@ -40,6 +40,9 @@ const MAX_PLAYERS := 8
 func _ready() -> void:
 	SafeArea.apply_bottom_spacer($VBoxContainer)
 
+	ScreenLayout.layout_changed.connect(_on_layout_changed)
+	_apply_layout()
+
 	load_confirm.get_ok_button().text     = "Charger"
 	load_confirm.get_cancel_button().text = "Annuler"
 	load_confirm.confirmed.connect(_on_load_confirmed)
@@ -66,6 +69,14 @@ func _ready() -> void:
 	_refresh_mode_buttons()
 	_refresh_count_label()
 	_refresh_saves_list()
+
+## En paysage (grand écran), le formulaire reste une colonne centrée de
+## 640 px de large au lieu de s'étirer sur toute la largeur.
+func _on_layout_changed(_landscape: bool) -> void:
+	_apply_layout()
+
+func _apply_layout() -> void:
+	ScreenLayout.constrain_width($VBoxContainer, 640.0 if ScreenLayout.is_landscape() else 0.0)
 
 # ─────────────────────────────────────────────
 #  Parties sauvegardées

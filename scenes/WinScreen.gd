@@ -22,6 +22,8 @@ const GAME_SCENE := "res://scenes/Game.tscn"
 func _ready() -> void:
 	print("[WinScreen] _ready() -> winner_index=%d" % GameData.winner_index)
 	SafeArea.apply_bottom_spacer($VBoxContainer)
+	ScreenLayout.layout_changed.connect(_on_layout_changed)
+	_apply_layout()
 	btn_menu.pressed.connect(func():  get_tree().change_scene_to_file(MENU_SCENE))
 	btn_burger.pressed.connect(func(): get_tree().change_scene_to_file(MENU_SCENE))
 	btn_replay.pressed.connect(_on_replay)
@@ -34,6 +36,15 @@ func _ready() -> void:
 		GameData.current_save_id = ""
 
 	_display_results()
+
+# ─────────────────────────────────────────────
+## En paysage (grand écran), le classement reste une colonne centrée de
+## 720 px de large.
+func _on_layout_changed(_landscape: bool) -> void:
+	_apply_layout()
+
+func _apply_layout() -> void:
+	ScreenLayout.constrain_width($VBoxContainer, 720.0 if ScreenLayout.is_landscape() else 0.0)
 
 # ─────────────────────────────────────────────
 ## Construit tout l'écran : titre du gagnant + classement complet.
