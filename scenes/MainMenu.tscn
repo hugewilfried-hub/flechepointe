@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://dgpdewe024soj"]
 
 [ext_resource type="Script" uid="uid://c10ktuornp5sv" path="res://scenes/MainMenu.gd" id="1_yqorp"]
+[ext_resource type="PackedScene" path="res://components/Background.tscn" id="bg_scene"]
 
 [node name="MainMenu" type="Control" unique_id=423795663]
 layout_mode = 3
@@ -10,6 +11,8 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_yqorp")
+
+[node name="Background" parent="." instance=ExtResource("bg_scene")]
 
 [node name="load_confirm" type="ConfirmationDialog" parent="." unique_id=1122501018]
 title = "Reprendre la partie ?"

@@ -92,7 +92,7 @@ func _on_layout_changed(_landscape: bool) -> void:
 	_apply_layout()
 
 func _apply_layout() -> void:
-	ScreenLayout.constrain_width($VBoxContainer, 640.0 if ScreenLayout.is_landscape() else 0.0)
+	ScreenLayout.constrain_width($VBoxContainer, 640.0 if ScreenLayout.is_landscape() else 440.0)
 
 # ─────────────────────────────────────────────
 #  Parties sauvegardées

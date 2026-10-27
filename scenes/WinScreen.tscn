@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://ddnm1p8pyccvr"]
 
 [ext_resource type="Script" uid="uid://e7060scc0b0i" path="res://scenes/WinScreen.gd" id="1_ulig0"]
+[ext_resource type="PackedScene" path="res://components/Background.tscn" id="bg_scene"]
 
 [node name="WinScreen" type="Control" unique_id=1646087787]
 layout_mode = 3
@@ -10,6 +11,8 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_ulig0")
+
+[node name="Background" parent="." instance=ExtResource("bg_scene")]
 
 [node name="btn_burger" type="Button" parent="."]
 layout_mode = 1

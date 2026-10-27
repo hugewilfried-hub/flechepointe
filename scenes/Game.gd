@@ -135,6 +135,8 @@ func _on_layout_changed(_landscape: bool) -> void:
 	_apply_layout()
 
 func _apply_layout() -> void:
+	# Marges latérales : colonne centrée un peu plus étroite que l'écran.
+	ScreenLayout.constrain_width($VBoxContainer, 1240.0 if ScreenLayout.is_landscape() else 450.0)
 	if ScreenLayout.is_landscape():
 		_enter_landscape()
 	else:
@@ -683,7 +685,7 @@ func _cricket_award(player: Dictionary, n: int, points: int) -> void:
 ## Hauteur de la zone des scores en portrait : le Cricket affiche des
 ## cartes plus hautes (score + 7 numéros).
 func _portrait_score_height() -> float:
-	return 240.0 if GameData.game_mode == GameData.GameMode.CRICKET else 170.0
+	return 290.0 if GameData.game_mode == GameData.GameMode.CRICKET else 215.0
 
 ## Hauteur de la zone d'historique : réduite en Cricket, où les cartes
 ## de scores prennent déjà beaucoup de place et où le détail des tours

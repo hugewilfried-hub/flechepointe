@@ -34,12 +34,12 @@ const R_DOUBLE_S  := 0.670  # Début anneau Double
 const R_DOUBLE_E  := 0.740  # Fin   anneau Double  ← bord jouable
 
 # ── Couleurs (alignées sur theme/game_theme.tres) ─────────────────────────────
-const COL_DARK    := Color(0.0902, 0.0745, 0.0627)  # board_dark
-const COL_LIGHT   := Color(0.9020, 0.8627, 0.7686)  # board_light
-const COL_RED     := Color(0.7882, 0.2510, 0.1725)  # red
-const COL_GREEN   := Color(0.1725, 0.5412, 0.3059)  # green
-const COL_BG      := Color(0.0784, 0.0706, 0.0588)  # bg
-const COL_WIRE    := Color(0.8196, 0.6471, 0.2392, 0.55)  # brass
+const COL_DARK    := Color(0.075, 0.09, 0.155)
+const COL_LIGHT   := Color(0.86, 0.88, 0.95)
+const COL_RED     := Color(0.93, 0.30, 0.34)
+const COL_GREEN   := Color(0.14, 0.72, 0.52)
+const COL_BG      := Color(0.055, 0.07, 0.125)
+const COL_WIRE    := Color(0.62, 0.68, 0.9, 0.4)
 
 var _center: Vector2
 var _radius: float
@@ -65,6 +65,9 @@ func _draw() -> void:
 	if _radius <= 0:
 		return
 	# Fond noir
+	# Halo + anneau extérieur (look moderne)
+	draw_circle(_center, _radius * (R_DOUBLE_E + 0.13), Color(0.424, 0.486, 1, 0.07))
+	draw_circle(_center, _radius * (R_DOUBLE_E + 0.075), Color(0.12, 0.15, 0.26))
 	draw_circle(_center, _radius * (R_DOUBLE_E + 0.06), COL_BG)
 	_draw_sectors()
 	_draw_bull()
@@ -152,9 +155,9 @@ func _draw_numbers() -> void:
 		var tw     := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
 
 		var is_cricket := NUMBERS[i] in GameData.CRICKET_NUMBERS
-		var col := Color(0.9294, 0.8941, 0.8078)  # ink
+		var col := Color(0.94, 0.96, 1.0)  # ink
 		if cricket_mode and not is_cricket:
-			col = Color(0.4902, 0.4510, 0.3765)  # ink_faint
+			col = Color(0.42, 0.47, 0.62)  # ink_faint
 
 		draw_string(font, pos - Vector2(tw / 2.0, -float(font_size) * 0.33),
 					text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, col)

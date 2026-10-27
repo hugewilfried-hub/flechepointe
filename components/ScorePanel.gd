@@ -72,8 +72,8 @@ func _make_player_column(
 	if mode == GameData.GameMode.CRICKET:
 		if is_current:
 			var hl := StyleBoxFlat.new()
-			hl.bg_color = Color(0.30, 0.23, 0.08)
-			hl.border_color = Color(0.82, 0.65, 0.24)
+			hl.bg_color = Color(0.17, 0.16, 0.22)
+			hl.border_color = Color(1.0, 0.761, 0.294)
 			hl.set_border_width_all(4)
 			hl.set_corner_radius_all(10)
 			hl.set_content_margin_all(8)
@@ -151,10 +151,10 @@ func _add_score_301_501(
 		var potential: int = p["score"] - pending_pts
 		if potential < 0:
 			score_lbl.text = "BUST"
-			score_lbl.add_theme_color_override("font_color", Color(0.7882, 0.2510, 0.1725))  # red
+			score_lbl.add_theme_color_override("font_color", Color(1.0, 0.365, 0.424))  # red
 		else:
 			score_lbl.text = str(potential)
-			score_lbl.add_theme_color_override("font_color", Color(0.1725, 0.5412, 0.3059))  # green
+			score_lbl.add_theme_color_override("font_color", Color(0.176, 0.831, 0.627))  # green
 	else:
 		score_lbl.text = str(displayed_score)
 
@@ -202,9 +202,9 @@ func _add_score_cricket(
 		m_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		m_lbl.add_theme_font_size_override("font_size", 26)
 		if marks >= 3:
-			m_lbl.add_theme_color_override("font_color", Color(0.1725, 0.5412, 0.3059))  # green
+			m_lbl.add_theme_color_override("font_color", Color(0.176, 0.831, 0.627))  # green
 		elif marks > 0:
-			m_lbl.add_theme_color_override("font_color", Color(0.8196, 0.6471, 0.2392))  # brass
+			m_lbl.add_theme_color_override("font_color", Color(1.0, 0.761, 0.294))  # brass
 		cell.add_child(m_lbl)
 
 		row.add_child(cell)
