@@ -104,7 +104,7 @@ func _make_player_column(
 			_add_score_free(col, p)
 
 	# ── Indicateur joueur actif ──────────────
-	if is_current:
+	if is_current and mode != GameData.GameMode.CRICKET:  # en Cricket, le nom porte déjà un ▶
 		var arrow := Label.new()
 		arrow.text                 = "▲"
 		arrow.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER

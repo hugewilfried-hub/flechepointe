@@ -166,7 +166,7 @@ func _enter_landscape() -> void:
 	score_panel.set_stacked(true)
 	score_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	history_panel.reparent(left, false)
-	history_panel.custom_minimum_size = Vector2(0, 160)
+	history_panel.custom_minimum_size = Vector2(0, 110)
 
 	# Gros écran tactile : boutons et chiffres plus grands.
 	for btn in [btn_undo, btn_miss, btn_next]:
