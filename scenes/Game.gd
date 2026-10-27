@@ -115,6 +115,7 @@ func _ready() -> void:
 		GameData.pending_bust  = false
 
 	score_scroll.custom_minimum_size = Vector2(0, _portrait_score_height())
+	history_panel.custom_minimum_size = Vector2(0, _history_height(false))
 	ScreenLayout.layout_changed.connect(_on_layout_changed)
 	_apply_layout()
 
@@ -166,7 +167,7 @@ func _enter_landscape() -> void:
 	score_panel.set_stacked(true)
 	score_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	history_panel.reparent(left, false)
-	history_panel.custom_minimum_size = Vector2(0, 110)
+	history_panel.custom_minimum_size = Vector2(0, _history_height(true))
 
 	# Gros écran tactile : boutons et chiffres plus grands.
 	for btn in [btn_undo, btn_miss, btn_next]:
@@ -209,7 +210,7 @@ func _leave_landscape() -> void:
 
 	history_panel.reparent(root, false)
 	root.move_child(history_panel, 4)
-	history_panel.custom_minimum_size = Vector2(0, 90)
+	history_panel.custom_minimum_size = Vector2(0, _history_height(false))
 
 	_body.queue_free()
 	_body = null
@@ -683,3 +684,11 @@ func _cricket_award(player: Dictionary, n: int, points: int) -> void:
 ## cartes plus hautes (score + 7 numéros).
 func _portrait_score_height() -> float:
 	return 240.0 if GameData.game_mode == GameData.GameMode.CRICKET else 170.0
+
+## Hauteur de la zone d'historique : réduite en Cricket, où les cartes
+## de scores prennent déjà beaucoup de place et où le détail des tours
+## est moins utile.
+func _history_height(landscape: bool) -> float:
+	if GameData.game_mode == GameData.GameMode.CRICKET:
+		return 50.0 if landscape else 40.0
+	return 110.0 if landscape else 90.0
