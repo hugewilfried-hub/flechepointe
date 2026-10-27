@@ -67,13 +67,29 @@ func _make_player_column(
 	card.theme_type_variation  = &"ActivePanel" if is_current else &"PanelContainer"
 	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
+	# Cricket : on rend le joueur en cours bien visible (fond doré, nom
+	# agrandi) et on atténue les autres cartes.
+	if mode == GameData.GameMode.CRICKET:
+		if is_current:
+			var hl := StyleBoxFlat.new()
+			hl.bg_color = Color(0.30, 0.23, 0.08)
+			hl.border_color = Color(0.82, 0.65, 0.24)
+			hl.set_border_width_all(4)
+			hl.set_corner_radius_all(10)
+			hl.set_content_margin_all(8)
+			card.add_theme_stylebox_override("panel", hl)
+		else:
+			card.modulate = Color(1, 1, 1, 0.6)
+
 	var col := VBoxContainer.new()
 	col.alignment = BoxContainer.ALIGNMENT_CENTER
 	card.add_child(col)
 
 	# ── Nom ─────────────────────────────────
 	var name_lbl := Label.new()
-	name_lbl.text                 = p["name"]
+	name_lbl.text                 = ("▶ " + p["name"]) if (is_current and mode == GameData.GameMode.CRICKET) else p["name"]
+	if mode == GameData.GameMode.CRICKET:
+		name_lbl.add_theme_font_size_override("font_size", 22)
 	name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	name_lbl.theme_type_variation = &"AccentLabel" if is_current else &"MutedLabel"
 	col.add_child(name_lbl)
@@ -160,13 +176,13 @@ func _add_score_cricket(
 	pts_lbl.text                  = str(p["cricket_score"])
 	pts_lbl.horizontal_alignment  = HORIZONTAL_ALIGNMENT_CENTER
 	pts_lbl.theme_type_variation  = &"ScoreLabel"
-	pts_lbl.add_theme_font_size_override("font_size", 20)
+	pts_lbl.add_theme_font_size_override("font_size", 34)
 	col.add_child(pts_lbl)
 
 	# Marques par numéro (15..20 + Bull), alignées horizontalement
 	var row := HBoxContainer.new()
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
-	row.add_theme_constant_override("separation", 6)
+	row.add_theme_constant_override("separation", 10)
 
 	for n in GameData.CRICKET_NUMBERS:
 		var marks: int = p["cricket_marks"].get(n, 0)
@@ -178,13 +194,13 @@ func _add_score_cricket(
 		n_lbl.text = str(n) if n != 25 else "B"
 		n_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		n_lbl.theme_type_variation = &"MutedLabel"
-		n_lbl.add_theme_font_size_override("font_size", 10)
+		n_lbl.add_theme_font_size_override("font_size", 17)
 		cell.add_child(n_lbl)
 
 		var m_lbl := Label.new()
-		m_lbl.text = MARK_ICONS[clamp(marks, 0, 3)]
+		m_lbl.text = MARK_ICONS[clamp(marks, 0, 3)] if marks > 0 else "·"
 		m_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		m_lbl.add_theme_font_size_override("font_size", 13)
+		m_lbl.add_theme_font_size_override("font_size", 26)
 		if marks >= 3:
 			m_lbl.add_theme_color_override("font_color", Color(0.1725, 0.5412, 0.3059))  # green
 		elif marks > 0:

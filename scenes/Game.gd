@@ -114,6 +114,7 @@ func _ready() -> void:
 		GameData.pending_darts = []
 		GameData.pending_bust  = false
 
+	score_scroll.custom_minimum_size = Vector2(0, _portrait_score_height())
 	ScreenLayout.layout_changed.connect(_on_layout_changed)
 	_apply_layout()
 
@@ -188,7 +189,7 @@ func _leave_landscape() -> void:
 
 	score_scroll.reparent(root, false)
 	root.move_child(score_scroll, 1)
-	score_scroll.custom_minimum_size = Vector2(0, 170)
+	score_scroll.custom_minimum_size = Vector2(0, _portrait_score_height())
 	score_scroll.size_flags_vertical = Control.SIZE_FILL
 	score_panel.set_stacked(false)
 	score_panel.size_flags_horizontal = Control.SIZE_FILL
@@ -677,3 +678,8 @@ func _cricket_award(player: Dictionary, n: int, points: int) -> void:
 		if not is_same(other, player) and other["cricket_marks"].get(n, 0) < 3:
 			other["cricket_score"] += points
 			print("[Game] Cut-Throat : +%d pts pour %s (n'a pas fermé le %d)" % [points, other["name"], n])
+
+## Hauteur de la zone des scores en portrait : le Cricket affiche des
+## cartes plus hautes (score + 7 numéros).
+func _portrait_score_height() -> float:
+	return 240.0 if GameData.game_mode == GameData.GameMode.CRICKET else 170.0
