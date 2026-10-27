@@ -250,7 +250,10 @@ func _on_dart_thrown(number: int, multiplier: int) -> void:
 	# on affiche juste un petit message et on ne l'enregistre pas.
 	if GameData.game_mode == GameData.GameMode.CRICKET:
 		if number not in GameData.CRICKET_NUMBERS:
-			print("[Game] -> hors jeu en Cricket (numéro %d)" % number)
+			# Règle officielle : la fléchette est perdue (elle occupe un des
+			# 3 emplacements du tour, comme un raté) mais ne marque rien.
+			print("[Game] -> hors jeu en Cricket (numéro %d) : fléchette perdue" % number)
+			_register_dart(0, 0)
 			_show_feedback("Hors jeu")
 			return
 
