@@ -242,7 +242,7 @@ func _on_dart_thrown(number: int, multiplier: int) -> void:
 	print("[Game] Fléchette reçue : number=%d, multiplier=%d" % [number, multiplier])
 
 	# Ignore si le tour est déjà complet (3 fléchettes) ou déjà "bust".
-	if _darts.size() >= 3 or _bust:
+	if _turn_closed():
 		print("[Game] -> ignorée (tour complet ou bust)")
 		return
 
@@ -262,7 +262,7 @@ func _on_dart_thrown(number: int, multiplier: int) -> void:
 ## et n'ouvre aucune marque de Cricket.
 func _on_miss() -> void:
 	print("[Game] Bouton Raté pressé")
-	if _darts.size() >= 3 or _bust:
+	if _turn_closed():
 		print("[Game] -> ignoré (tour complet ou bust)")
 		return
 	_register_dart(0, 0)
@@ -279,13 +279,37 @@ func _register_dart(number: int, multiplier: int) -> void:
 	# (voir _apply_301_501). On le détecte dès la 1ère/2e/3e fléchette
 	# pour prévenir immédiatement le joueur à l'écran.
 	if GameData.game_mode in [GameData.GameMode.MODE_301, GameData.GameMode.MODE_501]:
-		var potential: int = GameData.get_current_player()["score"] - _turn_total()
-		if potential < 0:
+		var start_score: int = GameData.get_current_player()["score"]
+		if _is_bust(start_score, _turn_total(), multiplier, GameData.double_out):
 			_bust = true
-			print("[Game] BUST ! Score restant potentiel = %d (< 0)" % potential)
+			print("[Game] BUST ! (score %d, total du tour %d, sortie double=%s)" % [start_score, _turn_total(), GameData.double_out])
 
 	_refresh_throw_panel()
 	btn_next.disabled = false
+
+## Règle officielle 301/501 : le tour est un bust si on passe sous 0.
+## Avec la sortie double, c'est aussi un bust si on tombe sur 1 (aucun
+## double ne permet de finir) ou sur 0 avec une fléchette qui n'est pas
+## un double (le Bull central compte comme double : multiplicateur 2).
+func _is_bust(start_score: int, total: int, last_multiplier: int, double_out: bool) -> bool:
+	var left := start_score - total
+	if left < 0:
+		return true
+	if double_out:
+		if left == 1:
+			return true
+		if left == 0 and last_multiplier != 2:
+			return true
+	return false
+
+## Le tour est terminé : 3 fléchettes lancées, bust, ou victoire acquise
+## (score ramené à 0 dans les règles : inutile de lancer le reste).
+func _turn_closed() -> bool:
+	if _darts.size() >= 3 or _bust:
+		return true
+	if GameData.game_mode in [GameData.GameMode.MODE_301, GameData.GameMode.MODE_501]:
+		return GameData.get_current_player()["score"] - _turn_total() == 0 and not _darts.is_empty()
+	return false
 
 ## Convertit une fléchette (numéro + multiplicateur) en texte affiché
 ## dans la rangée dart1/dart2/dart3, ex: "T20" = Triple 20, "D25"/"Bull"
@@ -386,7 +410,7 @@ func _apply_301_501(player: Dictionary) -> void:
 	# faut que la fléchette qui ramène le score à exactement 0 soit un
 	# double (ou le Bull double = 50). Sinon, le tour est un bust classique
 	# (le score ne bouge pas), comme dans une vraie partie de fléchettes.
-	if new_score == 0 and GameData.double_out and not _finished_on_double(player["score"]):
+	if GameData.double_out and (new_score == 1 or (new_score == 0 and not _finished_on_double(player["score"]))):
 		print("[Game] %s atteint 0 mais pas sur un double (sortie double active) -> BUST" % player["name"])
 		player["history"].append({"darts": _darts.duplicate(), "bust": true})
 		_log_turn(player, true)
