@@ -462,7 +462,7 @@ func _apply_cricket(player: Dictionary) -> void:
 		# encore fermé ce numéro).
 		if current_marks >= 3:
 			if not GameData.all_players_closed(n):
-				player["cricket_score"] += n * m
+				_cricket_award(player, n, n * m)
 				print("[Game] %s marque %d pts sur le %d (déjà fermé)" % [player["name"], n * m, n])
 			continue
 
@@ -476,7 +476,7 @@ func _apply_cricket(player: Dictionary) -> void:
 
 		if player["cricket_marks"][n] >= 3 and scoring_m > 0:
 			if not GameData.all_players_closed(n):
-				player["cricket_score"] += n * scoring_m
+				_cricket_award(player, n, n * scoring_m)
 				print("[Game] %s marque %d pts supplémentaires sur le %d (fermeture + surplus)" % [player["name"], n * scoring_m, n])
 
 	player["history"].append({"darts": _darts.duplicate()})
@@ -665,3 +665,15 @@ func _show_feedback(msg: String) -> void:
 	if is_inside_tree():
 		lbl_bust.text    = "💥 BUST !"
 		lbl_bust.visible = _bust
+
+## Attribue des points Cricket gagnés par `player` sur le numéro `n`.
+## Règle classique : ils s'ajoutent à son propre score. Cut-Throat : ils
+## sont ajoutés à chaque ADVERSAIRE qui n'a pas encore fermé ce numéro.
+func _cricket_award(player: Dictionary, n: int, points: int) -> void:
+	if not GameData.cut_throat:
+		player["cricket_score"] += points
+		return
+	for other in GameData.players:
+		if not is_same(other, player) and other["cricket_marks"].get(n, 0) < 3:
+			other["cricket_score"] += points
+			print("[Game] Cut-Throat : +%d pts pour %s (n'a pas fermé le %d)" % [points, other["name"], n])

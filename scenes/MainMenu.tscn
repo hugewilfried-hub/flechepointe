@@ -99,6 +99,22 @@ toggle_mode = true
 custom_minimum_size = Vector2(46, 24)
 text = ""
 
+[node name="cut_throat_row" type="HFlowContainer" parent="VBoxContainer"]
+visible = false
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="VBoxContainer/cut_throat_row"]
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Cut-Throat : "
+
+[node name="chk_cut_throat" type="Button" parent="VBoxContainer/cut_throat_row"]
+layout_mode = 2
+toggle_mode = true
+custom_minimum_size = Vector2(46, 24)
+text = ""
+
 [node name="joueur_row" type="HFlowContainer" parent="VBoxContainer" unique_id=1581853831]
 layout_mode = 2
 alignment = 1

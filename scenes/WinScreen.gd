@@ -79,7 +79,10 @@ func _display_results() -> void:
 		GameData.GameMode.MODE_301, GameData.GameMode.MODE_501:
 			sorted_players.sort_custom(func(a, b): return a["score"] < b["score"])
 		GameData.GameMode.CRICKET:
-			sorted_players.sort_custom(func(a, b): return a["cricket_score"] > b["cricket_score"])
+			if GameData.cut_throat:
+				sorted_players.sort_custom(func(a, b): return a["cricket_score"] < b["cricket_score"])
+			else:
+				sorted_players.sort_custom(func(a, b): return a["cricket_score"] > b["cricket_score"])
 		GameData.GameMode.FREE_SCORE:
 			sorted_players.sort_custom(func(a, b): return a["free_score"] > b["free_score"])
 

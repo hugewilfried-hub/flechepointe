@@ -19,6 +19,8 @@ const GAME_SCENE := "res://scenes/Game.tscn"
 @onready var btn_free:          Button        = $VBoxContainer/mode_box/bnt_free
 @onready var double_out_row:    HFlowContainer = $VBoxContainer/double_out_row
 @onready var chk_double_out:    Button        = $VBoxContainer/double_out_row/chk_double_out
+@onready var cut_throat_row:   HFlowContainer = $VBoxContainer/cut_throat_row
+@onready var chk_cut_throat:    Button        = $VBoxContainer/cut_throat_row/chk_cut_throat
 @onready var btn_minus:         Button        = $VBoxContainer/joueur_row/btn_minus
 @onready var btn_plus:          Button        = $VBoxContainer/joueur_row/btn_plus
 @onready var lbl_count:         Label         = $VBoxContainer/joueur_row/lbl_count
@@ -28,6 +30,7 @@ const GAME_SCENE := "res://scenes/Game.tscn"
 var _mode: GameData.GameMode = GameData.GameMode.MODE_501
 var _player_count: int = 2
 var _double_out: bool = false
+var _cut_throat: bool = false
 var _switch_knob: ImageTexture
 
 # Id de la sauvegarde en attente de confirmation dans load_confirm
@@ -57,15 +60,19 @@ func _ready() -> void:
 	btn_plus.pressed.connect(func():  _change_count(+1))
 	btn_start.pressed.connect(_on_start)
 	chk_double_out.toggled.connect(_on_double_out_toggled)
+	chk_cut_throat.toggled.connect(_on_cut_throat_toggled)
 
 	# Pré-remplir si on revient du WinScreen (rejouer)
 	if GameData.player_names.size() >= 2:
 		_player_count = GameData.player_names.size()
 		_mode         = GameData.game_mode
 		_double_out   = GameData.double_out
+		_cut_throat   = GameData.cut_throat
 
 	chk_double_out.button_pressed = _double_out
 	_refresh_double_out_style()
+	chk_cut_throat.button_pressed = _cut_throat
+	_style_switch(chk_cut_throat, _cut_throat)
 	_rebuild_names()
 	_refresh_mode_buttons()
 	_refresh_count_label()
@@ -131,7 +138,7 @@ func _build_save_summary(data: Dictionary) -> String:
 	var mode: int = int(data.get("game_mode", GameData.GameMode.MODE_501))
 
 	var lines: Array[String] = []
-	lines.append("%s — Manche %d" % [mode_names.get(mode, "?"), int(data.get("round_number", 1))])
+	lines.append("%s%s — Manche %d" % [mode_names.get(mode, "?"), " (Cut-Throat)" if data.get("cut_throat", false) else "", int(data.get("round_number", 1))])
 	lines.append("")
 
 	for raw_p in data.get("players", []) as Array:
@@ -183,6 +190,7 @@ func _refresh_mode_buttons() -> void:
 
 	# La sortie double n'a de sens qu'en 301/501 (compte à rebours).
 	double_out_row.visible = (_mode == GameData.GameMode.MODE_301 or _mode == GameData.GameMode.MODE_501)
+	cut_throat_row.visible = (_mode == GameData.GameMode.CRICKET)
 
 # ─────────────────────────────────────────────
 #  Nombre de joueurs
@@ -210,20 +218,23 @@ func _on_double_out_toggled(pressed: bool) -> void:
 ## contrôle, ce qui garantit un rendu strictement symétrique entre les
 ## deux états, seule la couleur de piste changeant (vert/rouge).
 func _refresh_double_out_style() -> void:
+	_style_switch(chk_double_out, _double_out)
+
+func _style_switch(btn: Button, on: bool) -> void:
 	var track := StyleBoxFlat.new()
-	track.bg_color = Color(0.35, 0.85, 0.45) if _double_out else Color(0.9, 0.35, 0.35)
+	track.bg_color = Color(0.35, 0.85, 0.45) if on else Color(0.9, 0.35, 0.35)
 	track.set_corner_radius_all(12)
 	track.content_margin_left = 3
 	track.content_margin_right = 3
 	track.content_margin_top = 3
 	track.content_margin_bottom = 3
 	for state in ["normal", "hover", "pressed", "hover_pressed", "focus", "disabled"]:
-		chk_double_out.add_theme_stylebox_override(state, track)
+		btn.add_theme_stylebox_override(state, track)
 	if _switch_knob == null:
 		_switch_knob = _build_switch_knob()
-	chk_double_out.icon = _switch_knob
-	chk_double_out.expand_icon = false
-	chk_double_out.icon_alignment = HORIZONTAL_ALIGNMENT_RIGHT if _double_out else HORIZONTAL_ALIGNMENT_LEFT
+	btn.icon = _switch_knob
+	btn.expand_icon = false
+	btn.icon_alignment = HORIZONTAL_ALIGNMENT_RIGHT if on else HORIZONTAL_ALIGNMENT_LEFT
 
 ## Génère le curseur (petit disque blanc) du switch.
 func _build_switch_knob(diameter: int = 18) -> ImageTexture:
@@ -287,5 +298,11 @@ func _on_start() -> void:
 
 	print("[MainMenu] Démarrage de la partie : mode=%s, joueurs=%s, sortie double=%s" % [GameData.GameMode.keys()[_mode], names, _double_out])
 	GameData.double_out = _double_out
+	GameData.cut_throat = _cut_throat
 	GameData.setup_game(_mode, names)
 	get_tree().change_scene_to_file(GAME_SCENE)
+
+func _on_cut_throat_toggled(pressed: bool) -> void:
+	print("[MainMenu] Cut-Throat -> %s" % pressed)
+	_cut_throat = pressed
+	_style_switch(chk_cut_throat, _cut_throat)

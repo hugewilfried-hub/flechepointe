@@ -26,6 +26,10 @@ var player_names: Array[String] = []
 # pour qu'elle survive à un "Rejouer" (comme game_mode/player_names).
 var double_out: bool = false
 
+# Variante Cricket "Cut-Throat" : les points marqués sont ajoutés aux
+# ADVERSAIRES qui n'ont pas fermé le numéro, et le score le plus BAS gagne.
+var cut_throat: bool = false
+
 # ── État en cours ────────────────────────────
 var players: Array[Dictionary] = []
 var current_player_index: int  = 0
@@ -135,7 +139,8 @@ func cricket_win(idx: int) -> bool:
 			return false
 	# Condition 2 : son score doit être >= à celui de tous les adversaires
 	for i in players.size():
-		if i != idx and players[i]["cricket_score"] > p["cricket_score"]:
+		var worse: bool = players[i]["cricket_score"] < p["cricket_score"] if cut_throat else players[i]["cricket_score"] > p["cricket_score"]
+		if i != idx and worse:
 			return false
 
 	print("[GameData] cricket_win() -> %s remplit les conditions de victoire !" % p["name"])

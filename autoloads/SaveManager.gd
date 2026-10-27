@@ -37,6 +37,7 @@ func save_game() -> void:
 		"game_mode":            GameData.game_mode,
 		"player_names":         GameData.player_names,
 		"double_out":           GameData.double_out,
+		"cut_throat":           GameData.cut_throat,
 		"players":              GameData.players,
 		"current_player_index": GameData.current_player_index,
 		"round_number":         GameData.round_number,
@@ -131,6 +132,7 @@ func load_game(id: String) -> bool:
 	GameData.game_mode            = data["game_mode"]
 	GameData.player_names         = _to_string_array(data["player_names"])
 	GameData.double_out           = data.get("double_out", false)
+	GameData.cut_throat           = data.get("cut_throat", false)
 	GameData.players              = _restore_players(data["players"])
 	GameData.current_player_index = data["current_player_index"]
 	GameData.round_number         = data["round_number"]
