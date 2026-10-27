@@ -35,6 +35,7 @@ func save_game() -> void:
 		"label":                _build_label(),
 		"saved_at":             Time.get_datetime_string_from_system(),
 		"game_mode":            GameData.game_mode,
+		"start_score":          GameData.start_score,
 		"player_names":         GameData.player_names,
 		"double_out":           GameData.double_out,
 		"cut_throat":           GameData.cut_throat,
@@ -59,14 +60,8 @@ func save_game() -> void:
 ## Construit un libellé lisible pour la liste des reprises, ex:
 ## "501 · Joueur 1, Joueur 2 · Manche 3".
 func _build_label() -> String:
-	var mode_names := {
-		GameData.GameMode.MODE_301:   "301",
-		GameData.GameMode.MODE_501:   "501",
-		GameData.GameMode.CRICKET:    "Cricket",
-		GameData.GameMode.FREE_SCORE: "Score libre",
-	}
 	var names := ", ".join(GameData.player_names)
-	return "%s · %s · Manche %d" % [mode_names.get(GameData.game_mode, "?"), names, GameData.round_number]
+	return "%s · %s · Manche %d" % [GameData.mode_name(GameData.game_mode, GameData.start_score), names, GameData.round_number]
 
 # ─────────────────────────────────────────────
 #  Liste / lecture
@@ -115,7 +110,20 @@ func _read_save(id: String) -> Variant:
 	var text := file.get_as_text()
 	file.close()
 	var parsed: Variant = JSON.parse_string(text)
-	return parsed if parsed is Dictionary else null
+	if parsed is Dictionary:
+		return _migrate(parsed)
+	return null
+
+## Anciennes sauvegardes : le mode 301 était la valeur 0 (sans start_score)
+## et le 501 la valeur 1. Tout devient X01 + score de départ.
+func _migrate(data: Dictionary) -> Dictionary:
+	var mode := int(data.get("game_mode", 0))
+	if mode == GameData.GameMode.LEGACY_501:
+		data["game_mode"]   = GameData.GameMode.X01
+		data["start_score"] = 501
+	elif mode == GameData.GameMode.X01 and not data.has("start_score"):
+		data["start_score"] = 301
+	return data
 
 # ─────────────────────────────────────────────
 #  Chargement
@@ -130,6 +138,7 @@ func load_game(id: String) -> bool:
 		return false
 
 	GameData.game_mode            = data["game_mode"]
+	GameData.start_score          = int(data.get("start_score", 501))
 	GameData.player_names         = _to_string_array(data["player_names"])
 	GameData.double_out           = data.get("double_out", false)
 	GameData.cut_throat           = data.get("cut_throat", false)

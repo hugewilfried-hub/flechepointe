@@ -101,7 +101,7 @@ func _ready() -> void:
 	dartboard.cricket_mode = (GameData.game_mode == GameData.GameMode.CRICKET)
 
 	# Rappel visuel de la règle "sortie double" si elle est active (301/501 uniquement).
-	lbl_double_out.visible = GameData.double_out and GameData.game_mode in [GameData.GameMode.MODE_301, GameData.GameMode.MODE_501]
+	lbl_double_out.visible = GameData.double_out and GameData.game_mode in [GameData.GameMode.X01]
 
 	# Reprise d'une partie sauvegardée en pleine volée : on remet les
 	# fléchettes déjà lancées avant de rafraîchir l'affichage, puis on
@@ -283,7 +283,7 @@ func _register_dart(number: int, multiplier: int) -> void:
 	# restant, le joueur "casse" (bust) et perdra son tour entier
 	# (voir _apply_301_501). On le détecte dès la 1ère/2e/3e fléchette
 	# pour prévenir immédiatement le joueur à l'écran.
-	if GameData.game_mode in [GameData.GameMode.MODE_301, GameData.GameMode.MODE_501]:
+	if GameData.game_mode in [GameData.GameMode.X01]:
 		var start_score: int = GameData.get_current_player()["score"]
 		if _is_bust(start_score, _turn_total(), multiplier, GameData.double_out):
 			_bust = true
@@ -312,7 +312,7 @@ func _is_bust(start_score: int, total: int, last_multiplier: int, double_out: bo
 func _turn_closed() -> bool:
 	if _darts.size() >= 3 or _bust:
 		return true
-	if GameData.game_mode in [GameData.GameMode.MODE_301, GameData.GameMode.MODE_501]:
+	if GameData.game_mode in [GameData.GameMode.X01]:
 		return GameData.get_current_player()["score"] - _turn_total() == 0 and not _darts.is_empty()
 	return false
 
@@ -384,7 +384,7 @@ func _on_end_free() -> void:
 func _apply_turn() -> void:
 	var player := GameData.get_current_player()
 	match GameData.game_mode:
-		GameData.GameMode.MODE_301, GameData.GameMode.MODE_501:
+		GameData.GameMode.X01:
 			_apply_301_501(player)
 		GameData.GameMode.CRICKET:
 			_apply_cricket(player)
@@ -579,7 +579,7 @@ func _try_checkout(target: int, darts: int, require_double: bool) -> Variant:
 ## "bust" et qu'il reste au moins une fléchette à lancer ce tour.
 func _refresh_checkout_hint() -> void:
 	var applicable := (
-		GameData.game_mode in [GameData.GameMode.MODE_301, GameData.GameMode.MODE_501]
+		GameData.game_mode in [GameData.GameMode.X01]
 		and not _bust
 	)
 	if not applicable:

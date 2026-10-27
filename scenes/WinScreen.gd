@@ -76,7 +76,7 @@ func _display_results() -> void:
 	# le meilleur a le score de points le PLUS HAUT.
 	var sorted_players := GameData.players.duplicate()
 	match GameData.game_mode:
-		GameData.GameMode.MODE_301, GameData.GameMode.MODE_501:
+		GameData.GameMode.X01:
 			sorted_players.sort_custom(func(a, b): return a["score"] < b["score"])
 		GameData.GameMode.CRICKET:
 			if GameData.cut_throat:
@@ -120,7 +120,7 @@ func _display_results() -> void:
 		score_lbl.theme_type_variation = &"ScoreLabel"
 		score_lbl.add_theme_font_size_override("font_size", 16)
 		match GameData.game_mode:
-			GameData.GameMode.MODE_301, GameData.GameMode.MODE_501:
+			GameData.GameMode.X01:
 				score_lbl.text = "%d pts restants" % p["score"]
 			GameData.GameMode.CRICKET:
 				score_lbl.text = "%d pts" % p["cricket_score"]

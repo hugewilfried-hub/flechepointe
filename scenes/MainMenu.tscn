@@ -64,15 +64,10 @@ horizontal_alignment = 1
 layout_mode = 2
 alignment = 1
 
-[node name="btn_301" type="Button" parent="VBoxContainer/mode_box" unique_id=401579492]
+[node name="btn_x01" type="Button" parent="VBoxContainer/mode_box" unique_id=401579492]
 layout_mode = 2
 theme_type_variation = &"SegButton"
-text = "301"
-
-[node name="btn_501" type="Button" parent="VBoxContainer/mode_box" unique_id=1225306201]
-layout_mode = 2
-theme_type_variation = &"SegButton"
-text = "501"
+text = "X01"
 
 [node name="bnt_cricket" type="Button" parent="VBoxContainer/mode_box" unique_id=1053058241]
 layout_mode = 2
@@ -83,6 +78,19 @@ text = "Cricket"
 layout_mode = 2
 theme_type_variation = &"SegButton"
 text = "Score Libre"
+
+[node name="start_row" type="HFlowContainer" parent="VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="VBoxContainer/start_row"]
+layout_mode = 2
+theme_type_variation = &"MutedLabel"
+text = "Score de départ : "
+
+[node name="opt_start" type="OptionButton" parent="VBoxContainer/start_row"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
 
 [node name="double_out_row" type="HFlowContainer" parent="VBoxContainer" unique_id=1715932264]
 layout_mode = 2

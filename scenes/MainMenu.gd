@@ -13,8 +13,9 @@ const GAME_SCENE := "res://scenes/Game.tscn"
 @onready var load_confirm:      ConfirmationDialog = $load_confirm
 @onready var saves_panel:       PanelContainer = $VBoxContainer/saves_panel
 @onready var saves_list:        VBoxContainer = $VBoxContainer/saves_panel/saves_col/saves_scroll/saves_list
-@onready var btn_301:           Button        = $VBoxContainer/mode_box/btn_301
-@onready var btn_501:           Button        = $VBoxContainer/mode_box/btn_501
+@onready var btn_x01:           Button        = $VBoxContainer/mode_box/btn_x01
+@onready var start_row:         HFlowContainer = $VBoxContainer/start_row
+@onready var opt_start:         OptionButton  = $VBoxContainer/start_row/opt_start
 @onready var btn_cricket:       Button        = $VBoxContainer/mode_box/bnt_cricket
 @onready var btn_free:          Button        = $VBoxContainer/mode_box/bnt_free
 @onready var double_out_row:    HFlowContainer = $VBoxContainer/double_out_row
@@ -27,7 +28,8 @@ const GAME_SCENE := "res://scenes/Game.tscn"
 @onready var names_container:   VBoxContainer = $VBoxContainer/VBoxContainer
 @onready var btn_start:         Button        = $VBoxContainer/btn_start
 
-var _mode: GameData.GameMode = GameData.GameMode.MODE_501
+var _mode: GameData.GameMode = GameData.GameMode.X01
+var _start_score: int = 501
 var _player_count: int = 2
 var _double_out: bool = false
 var _cut_throat: bool = false
@@ -51,8 +53,7 @@ func _ready() -> void:
 	load_confirm.get_cancel_button().text = "Annuler"
 	load_confirm.confirmed.connect(_on_load_confirmed)
 
-	btn_301.pressed.connect(func(): _set_mode(GameData.GameMode.MODE_301))
-	btn_501.pressed.connect(func(): _set_mode(GameData.GameMode.MODE_501))
+	btn_x01.pressed.connect(func(): _set_mode(GameData.GameMode.X01))
 	btn_cricket.pressed.connect(func(): _set_mode(GameData.GameMode.CRICKET))
 	btn_free.pressed.connect(func(): _set_mode(GameData.GameMode.FREE_SCORE))
 
@@ -60,12 +61,19 @@ func _ready() -> void:
 	btn_plus.pressed.connect(func():  _change_count(+1))
 	btn_start.pressed.connect(_on_start)
 	chk_double_out.toggled.connect(_on_double_out_toggled)
+
+	for s in GameData.START_SCORES:
+		opt_start.add_item(str(s))
+	_start_score = GameData.start_score
+	opt_start.select(maxi(GameData.START_SCORES.find(GameData.start_score), 0))
+	opt_start.item_selected.connect(_on_start_selected)
 	chk_cut_throat.toggled.connect(_on_cut_throat_toggled)
 
 	# Pré-remplir si on revient du WinScreen (rejouer)
 	if GameData.player_names.size() >= 2:
 		_player_count = GameData.player_names.size()
 		_mode         = GameData.game_mode
+		_start_score  = GameData.start_score
 		_double_out   = GameData.double_out
 		_cut_throat   = GameData.cut_throat
 
@@ -129,23 +137,17 @@ func _on_request_load(id: String) -> void:
 ## Construit le texte récapitulatif : mode, manche, et le point de
 ## chaque joueur (formaté comme sur ScorePanel/WinScreen selon le mode).
 func _build_save_summary(data: Dictionary) -> String:
-	var mode_names := {
-		GameData.GameMode.MODE_301:   "301",
-		GameData.GameMode.MODE_501:   "501",
-		GameData.GameMode.CRICKET:    "Cricket",
-		GameData.GameMode.FREE_SCORE: "Score libre",
-	}
-	var mode: int = int(data.get("game_mode", GameData.GameMode.MODE_501))
+	var mode: int = int(data.get("game_mode", GameData.GameMode.X01))
 
 	var lines: Array[String] = []
-	lines.append("%s%s — Manche %d" % [mode_names.get(mode, "?"), " (Cut-Throat)" if data.get("cut_throat", false) else "", int(data.get("round_number", 1))])
+	lines.append("%s%s — Manche %d" % [GameData.mode_name(mode, int(data.get("start_score", 501))), " (Cut-Throat)" if data.get("cut_throat", false) else "", int(data.get("round_number", 1))])
 	lines.append("")
 
 	for raw_p in data.get("players", []) as Array:
 		var p: Dictionary = raw_p
 		var score_text: String
 		match mode:
-			GameData.GameMode.MODE_301, GameData.GameMode.MODE_501:
+			GameData.GameMode.X01:
 				score_text = "%d restant" % int(p.get("score", 0))
 			GameData.GameMode.CRICKET:
 				score_text = "%d pts" % int(p.get("cricket_score", 0))
@@ -179,17 +181,17 @@ func _set_mode(mode: GameData.GameMode) -> void:
 	_refresh_mode_buttons()
 
 func _refresh_mode_buttons() -> void:
-	for btn in [btn_301, btn_501, btn_cricket, btn_free]:
+	for btn in [btn_x01, btn_cricket, btn_free]:
 		btn.theme_type_variation = &"SegButton"
 
 	match _mode:
-		GameData.GameMode.MODE_301:     btn_301.theme_type_variation     = &"SegButtonSelected"
-		GameData.GameMode.MODE_501:     btn_501.theme_type_variation     = &"SegButtonSelected"
+		GameData.GameMode.X01:          btn_x01.theme_type_variation     = &"SegButtonSelected"
 		GameData.GameMode.CRICKET:      btn_cricket.theme_type_variation = &"SegButtonSelected"
 		GameData.GameMode.FREE_SCORE:   btn_free.theme_type_variation    = &"SegButtonSelected"
 
 	# La sortie double n'a de sens qu'en 301/501 (compte à rebours).
-	double_out_row.visible = (_mode == GameData.GameMode.MODE_301 or _mode == GameData.GameMode.MODE_501)
+	double_out_row.visible = (_mode == GameData.GameMode.X01)
+	start_row.visible = (_mode == GameData.GameMode.X01)
 	cut_throat_row.visible = (_mode == GameData.GameMode.CRICKET)
 
 # ─────────────────────────────────────────────
@@ -298,6 +300,7 @@ func _on_start() -> void:
 
 	print("[MainMenu] Démarrage de la partie : mode=%s, joueurs=%s, sortie double=%s" % [GameData.GameMode.keys()[_mode], names, _double_out])
 	GameData.double_out = _double_out
+	GameData.start_score = _start_score
 	GameData.cut_throat = _cut_throat
 	GameData.setup_game(_mode, names)
 	get_tree().change_scene_to_file(GAME_SCENE)
@@ -306,3 +309,7 @@ func _on_cut_throat_toggled(pressed: bool) -> void:
 	print("[MainMenu] Cut-Throat -> %s" % pressed)
 	_cut_throat = pressed
 	_style_switch(chk_cut_throat, _cut_throat)
+
+func _on_start_selected(index: int) -> void:
+	_start_score = GameData.START_SCORES[index]
+	print("[MainMenu] Score de départ -> %d" % _start_score)

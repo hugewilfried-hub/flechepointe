@@ -10,14 +10,20 @@ extends Node
 #  via "GameData.xxx" car c'est un Autoload (singleton global).
 # ─────────────────────────────────────────────
 
-enum GameMode { MODE_301, MODE_501, CRICKET, FREE_SCORE }
+# X01 = 301, 401 ... 1001 (score de départ dans start_score). LEGACY_501 ne
+# sert qu'à relire d'anciennes sauvegardes (ancien mode 501 = valeur 1).
+enum GameMode { X01, LEGACY_501, CRICKET, FREE_SCORE }
+
+## Scores de départ proposés dans le menu.
+const START_SCORES: Array[int] = [301, 401, 501, 601, 701, 801, 901, 1001]
 
 # Les 7 numéros valables au Cricket : 15 à 20 + le Bull (25).
 # Un lancer sur un autre numéro (1-14) ne compte pour rien en Cricket.
 const CRICKET_NUMBERS: Array[int] = [15, 16, 17, 18, 19, 20, 25]
 
 # ── Paramètres de la partie ──────────────────
-var game_mode: GameMode = GameMode.MODE_501
+var game_mode: GameMode = GameMode.X01
+var start_score: int = 501
 var player_names: Array[String] = []
 
 # Règle "sortie double" (301/501 uniquement) : si activée, un joueur ne
@@ -71,15 +77,13 @@ func setup_game(mode: GameMode, names: Array[String]) -> void:
 	pending_bust          = false
 	players.clear()
 
-	# Le score de départ ne sert qu'aux modes 301/501 (compte à rebours).
-	var starting_score := 501
-	if mode == GameMode.MODE_301:
-		starting_score = 301
+	# Le score de départ ne sert qu'au mode X01 (compte à rebours).
+	var starting_score := start_score
 
 	for pname in names:
 		var p: Dictionary = {
 			"name":          pname,
-			"score":         starting_score,  # 301 / 501
+			"score":         starting_score,  # X01
 			"free_score":    0,               # Score libre
 			"cricket_marks": {},              # {numéro: int 0..3}
 			"cricket_score": 0,               # Points marqués en Cricket
@@ -154,3 +158,15 @@ func cricket_win(idx: int) -> bool:
 func replay() -> void:
 	print("[GameData] replay() -> on relance une partie avec les mêmes joueurs")
 	setup_game(game_mode, player_names)
+
+## Nom court d'un mode pour les libellés/récapitulatifs : le score de
+## départ pour X01 ("501"), sinon "Cricket" / "Score libre".
+func mode_name(mode: int, start: int) -> String:
+	match mode:
+		GameMode.X01, GameMode.LEGACY_501:
+			return str(start if mode == GameMode.X01 else 501)
+		GameMode.CRICKET:
+			return "Cricket"
+		GameMode.FREE_SCORE:
+			return "Score libre"
+	return "?"

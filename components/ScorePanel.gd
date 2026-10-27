@@ -96,7 +96,7 @@ func _make_player_column(
 
 	# ── Score principal ──────────────────────
 	match mode:
-		GameData.GameMode.MODE_301, GameData.GameMode.MODE_501:
+		GameData.GameMode.X01:
 			_add_score_301_501(col, p, idx, current_idx, pending_pts)
 		GameData.GameMode.CRICKET:
 			_add_score_cricket(col, p, idx, current_idx)
